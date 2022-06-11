@@ -67,6 +67,7 @@ pub fn run_gameplay() -> Result<(), Box<dyn Error>> {
           game_config.player_symbol.clone();
 
         game_config.game_board.tiles_covered += 1;
+        game_config.player_turn = false;
       } else {
         continue;
       }

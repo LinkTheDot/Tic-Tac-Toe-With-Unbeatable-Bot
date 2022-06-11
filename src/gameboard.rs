@@ -26,7 +26,7 @@ pub enum BoardPositions {
 }
 
 impl BoardConfig {
-  pub fn new() -> BoardConfig {
+  pub fn new() -> Self {
     let tiles = [
       [
         BoardTile::new(BoardPositions::Corner),
@@ -83,6 +83,7 @@ impl BoardTile {
       board_position,
     }
   }
+
   pub fn board_state_to_string(&self) -> String {
     match self.board_state {
       BoardState::X => "X".to_string(),

@@ -1,5 +1,6 @@
 #![allow(unused)]
 pub mod bot;
+pub mod default_impls;
 pub mod gameboard;
 pub mod gameplay;
 
