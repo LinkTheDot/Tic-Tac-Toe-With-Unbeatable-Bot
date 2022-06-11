@@ -28,9 +28,21 @@ pub enum BoardPositions {
 impl BoardConfig {
   pub fn new() -> BoardConfig {
     let tiles = [
-      [new_corner(), new_edge(), new_corner()],
-      [new_edge(), new_center(), new_edge()],
-      [new_corner(), new_edge(), new_corner()],
+      [
+        BoardTile::new(BoardPositions::Corner),
+        BoardTile::new(BoardPositions::Edge),
+        BoardTile::new(BoardPositions::Corner),
+      ],
+      [
+        BoardTile::new(BoardPositions::Edge),
+        BoardTile::new(BoardPositions::Center),
+        BoardTile::new(BoardPositions::Edge),
+      ],
+      [
+        BoardTile::new(BoardPositions::Corner),
+        BoardTile::new(BoardPositions::Edge),
+        BoardTile::new(BoardPositions::Corner),
+      ],
     ];
 
     BoardConfig {
@@ -65,33 +77,18 @@ impl BoardConfig {
 }
 
 impl BoardTile {
+  pub fn new(board_position: BoardPositions) -> Self {
+    BoardTile {
+      board_state: BoardState::Empty,
+      board_position,
+    }
+  }
   pub fn board_state_to_string(&self) -> String {
     match self.board_state {
       BoardState::X => "X".to_string(),
       BoardState::O => "O".to_string(),
       BoardState::Empty => "▮".to_string(),
     }
-  }
-}
-
-pub fn new_corner() -> BoardTile {
-  BoardTile {
-    board_state: BoardState::Empty,
-    board_position: BoardPositions::Corner,
-  }
-}
-
-pub fn new_edge() -> BoardTile {
-  BoardTile {
-    board_state: BoardState::Empty,
-    board_position: BoardPositions::Edge,
-  }
-}
-
-pub fn new_center() -> BoardTile {
-  BoardTile {
-    board_state: BoardState::Empty,
-    board_position: BoardPositions::Center,
   }
 }
 
