@@ -1,24 +1,26 @@
 use crate::gameplay::{Coordinates, GameConfig};
 
+#[derive(PartialEq, Clone, Debug)]
 pub struct BoardConfig {
   pub tiles: [[BoardTile; 3]; 3],
   pub tiles_covered: u8,
   pub player_symbol: BoardState,
 }
 
+#[derive(PartialEq, Clone, Debug)]
 pub struct BoardTile {
   pub board_state: BoardState,
   pub board_position: BoardPositions,
 }
 
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum BoardState {
   X,
   O,
   Empty,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Clone, Debug)]
 pub enum BoardPositions {
   Corner,
   Edge,
@@ -67,12 +69,23 @@ impl BoardConfig {
     }
   }
 
-  pub fn matching_adjacent_tiles(self, coords: Coordinates) -> Vec<Coordinates> {
-    let mut adjacent_symbols: Vec<Coordinates> = Vec::new();
-
+  pub fn matching_adjacent_tiles(&self, coords: Coordinates) -> Vec<Coordinates> {
     let adjacent_tiles = get_valid_coordinates_around(coords);
+    let matching_symbol: &BoardState = {
+      let symbol = &self.tiles[coords.0][coords.1].board_state;
 
-    vec![(0, 0)]
+      if symbol == &BoardState::Empty {
+        return vec![];
+      } else {
+        symbol
+      }
+    };
+
+    adjacent_tiles
+      .iter()
+      .filter(|x| &self.tiles[x.0][x.1].board_state == matching_symbol)
+      .cloned()
+      .collect::<Vec<Coordinates>>()
   }
 }
 
@@ -178,5 +191,22 @@ mod board_tests {
     assert_eq!(vec![3, 3, 3, 3], corner_coords_around_lengths);
     assert_eq!(vec![5, 5, 5, 5], edge_coords_around_lengths);
     assert_eq!(8, center_coords_around_length);
+  }
+
+  #[test]
+  pub fn matching_adjacent_tiles_logic_works() {
+    let mut board_config = BoardConfig::new();
+
+    board_config.tiles[0][0].board_state = BoardState::X;
+    board_config.tiles[1][0].board_state = BoardState::X;
+
+    let adjacent_matched_tiles = board_config.matching_adjacent_tiles((0, 0));
+    let adjacent_empty_tile = board_config.matching_adjacent_tiles((1, 1));
+    let empty_vec_because_bugged: Vec<Coordinates> = vec![];
+
+    // checks if it returns real matching symbols
+    assert_eq!(vec![(1, 0)], adjacent_matched_tiles);
+    // checks if it returns nothing when the tile symbol is Empty
+    assert_eq!(empty_vec_because_bugged, adjacent_empty_tile);
   }
 }
