@@ -1,4 +1,5 @@
-use crate::gameplay::{Coordinates, GameConfig};
+use crate::coordinate_methods::*;
+use crate::gameplay::GameConfig;
 
 #[derive(PartialEq, Clone, Debug)]
 pub struct BoardConfig {
@@ -87,6 +88,37 @@ impl BoardConfig {
       .cloned()
       .collect::<Vec<Coordinates>>()
   }
+
+  pub fn coordinates_connected_to_three_in_a_row(&self, coordinates: Coordinates) -> bool {
+    // if the coord tile is a corner and has an adjacent tile of same symbol
+    // find the opposing tile of that direction through some logic check all 3
+    //
+    // use an equation to find the directions
+    //
+    // if coord tile is edge and adjacent is center, find opposing edge through some logic
+    // and check all 3
+    //
+    // if is edge and adjacent is corner, use same as corner logic to determine
+    // the opposing corner and check all 3
+
+    // - first find what position it is in
+    // - next determine where an adjacent is
+    // - iterate through them just incase there's multiple
+    // - iteration logic - (start a counter for adjacent matching symbols)
+    // - first if it's a corner OR edge that requires an opposing, find some algorithm
+    // to find that (probably use a separate implementation for it)
+    // - next if it's an edge that goes to a corner OR a center, take a direction and
+    // start from there instead then run step one
+    // - check if that counter from the start == 3 if not start the iteration over
+    // and keep trying until you run out of things to iterate through
+
+    let origin_position = &self.tiles[coordinates.0][coordinates.1].board_position;
+    let adjacent_matches = self.matching_adjacent_tiles(coordinates);
+
+    let _x = adjacent_matches.iter().map(|coords| coords);
+
+    false
+  }
 }
 
 impl BoardTile {
@@ -108,20 +140,20 @@ impl BoardTile {
 
 pub fn get_valid_coordinates_around(coordinates: Coordinates) -> Vec<Coordinates> {
   let mut valid_coordinates: Vec<Coordinates> = Vec::new();
-  let converted_coordinates = [
+  let isize_coordinates = [
     coordinates.0.try_into().unwrap(),
     coordinates.1.try_into().unwrap(),
   ];
 
   let possible_coordinates: Vec<(isize, isize)> = vec![
-    (converted_coordinates[0], converted_coordinates[1] - 1),
-    (converted_coordinates[0], converted_coordinates[1] + 1),
-    (converted_coordinates[0] - 1, converted_coordinates[1]),
-    (converted_coordinates[0] + 1, converted_coordinates[1]),
-    (converted_coordinates[0] - 1, converted_coordinates[1] + 1),
-    (converted_coordinates[0] + 1, converted_coordinates[1] - 1),
-    (converted_coordinates[0] - 1, converted_coordinates[1] - 1),
-    (converted_coordinates[0] + 1, converted_coordinates[1] + 1),
+    (isize_coordinates[0], isize_coordinates[1] - 1),
+    (isize_coordinates[0], isize_coordinates[1] + 1),
+    (isize_coordinates[0] - 1, isize_coordinates[1]),
+    (isize_coordinates[0] + 1, isize_coordinates[1]),
+    (isize_coordinates[0] - 1, isize_coordinates[1] + 1),
+    (isize_coordinates[0] + 1, isize_coordinates[1] - 1),
+    (isize_coordinates[0] - 1, isize_coordinates[1] - 1),
+    (isize_coordinates[0] + 1, isize_coordinates[1] + 1),
   ];
 
   for coordinates in possible_coordinates {

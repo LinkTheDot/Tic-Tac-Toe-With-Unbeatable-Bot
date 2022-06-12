@@ -1,3 +1,4 @@
+use crate::coordinate_methods::*;
 use crate::gameboard::*;
 use rand::*;
 use std::error::Error;
@@ -38,8 +39,6 @@ pub enum GameState {
   OnGoing,
 }
 
-pub type Coordinates = (usize, usize);
-
 pub fn run_gameplay() -> Result<(), Box<dyn Error>> {
   let mut game_config = GameConfig::new();
 
@@ -48,7 +47,7 @@ pub fn run_gameplay() -> Result<(), Box<dyn Error>> {
     println!();
 
     if game_config.player_turn {
-      println!("Select a tile 1-9 or a1, b2, c3.");
+      println!("Select a tile 1-9 or a1, b2, c3, etc.");
 
       let mut player_input = String::new();
       io::stdin().read_line(&mut player_input).unwrap();
