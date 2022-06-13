@@ -4,78 +4,37 @@ use crate::gameplay::*;
 pub type Coordinates = (usize, usize);
 
 trait CoordinateMethods {
-  fn calculate_opposing_coordinates(
-    self,
-    adjacent_coords: Coordinates,
-    board_position: BoardPositions,
-  ) -> Option<Self>
+  fn calculate_opposing_coordinates(self, adjacent_coords: Coordinates) -> Option<Self>
   where
     Self: Sized;
 
   fn is_diagonal_from_origin(self, adjacent_coords: Coordinates) -> Option<(isize, isize)>;
-  fn is_horizontal_from_origin(self, adjacent_coords: Coordinates) -> Option<(isize, isize)>;
+  fn is_across_from_origin(self, adjacent_coords: Coordinates) -> Option<(isize, isize)>;
 }
 
 impl CoordinateMethods for Coordinates {
-  fn calculate_opposing_coordinates(
-    self,
-    adjacent_coords: Coordinates,
-    board_position: BoardPositions,
-  ) -> Option<Self>
+  fn calculate_opposing_coordinates(self, adjacent_coords: Coordinates) -> Option<Self>
   where
     Self: Sized,
   {
-    match board_position {
-      BoardPositions::Corner => {
-        if let Some(coords) = self.is_diagonal_from_origin(adjacent_coords) {
-          // corners diagonal opposite
-          //    = x2, y2 + (x1, y1 - 1, 1)
+    let coords: (isize, isize) = (
+      adjacent_coords.0.try_into().unwrap(),
+      adjacent_coords.1.try_into().unwrap(),
+    );
 
-          let origin_coords: (isize, isize) =
-            (self.0.try_into().unwrap(), self.1.try_into().unwrap());
+    let origin_coords: (isize, isize) = (
+      self.0.try_into().unwrap(), //
+      self.1.try_into().unwrap(),
+    );
 
-          Some((
-            (coords.0 + (origin_coords.0 - 1)).try_into().unwrap(),
-            (coords.1 + (origin_coords.1 - 1)).try_into().unwrap(),
-          ))
-        } else if let Some(coords) = self.is_horizontal_from_origin(adjacent_coords) {
-          // opposite
-          //    = x2, y2 + |(x1, y1 - x2, y2)|
-
-          let origin_coords: (isize, isize) =
-            (self.0.try_into().unwrap(), self.1.try_into().unwrap());
-
-          Some((
-            (coords.0 + (origin_coords.0 - coords.0).abs())
-              .try_into()
-              .unwrap(),
-            (coords.1 + (origin_coords.1 - coords.1).abs())
-              .try_into()
-              .unwrap(),
-          ))
-        } else {
-          None
-        }
-      }
-      BoardPositions::Edge => {
-        if let Some(coords) = self.is_horizontal_from_origin(adjacent_coords) {
-          let origin_coords: (isize, isize) =
-            (self.0.try_into().unwrap(), self.1.try_into().unwrap());
-
-          Some((
-            (coords.0 + (origin_coords.0 - coords.0).abs())
-              .try_into()
-              .unwrap(),
-            (coords.1 + (origin_coords.1 - coords.1).abs())
-              .try_into()
-              .unwrap(),
-          ))
-        } else {
-          None
-        }
-      }
-      _ => None,
-    }
+    Some((
+      (coords.0 - (origin_coords.0 - coords.0))
+        .try_into()
+        .unwrap(),
+      (coords.1 - (origin_coords.1 - coords.1))
+        .try_into()
+        .unwrap(),
+    ))
   }
 
   fn is_diagonal_from_origin(self, adjacent_coords: Coordinates) -> Option<(isize, isize)> {
@@ -114,7 +73,7 @@ impl CoordinateMethods for Coordinates {
     None
   }
 
-  fn is_horizontal_from_origin(self, adjacent_coords: Coordinates) -> Option<(isize, isize)> {
+  fn is_across_from_origin(self, adjacent_coords: Coordinates) -> Option<(isize, isize)> {
     let isize_coordinates: [isize; 2] = [self.0.try_into().unwrap(), self.1.try_into().unwrap()];
 
     let possible_coordinates: Vec<(isize, isize)> = vec![
@@ -152,7 +111,7 @@ impl CoordinateMethods for Coordinates {
 }
 
 #[cfg(test)]
-mod coord_tests {
+mod coordinate_methods {
   use super::*;
 
   #[test]
@@ -161,12 +120,27 @@ mod coord_tests {
     let adjacent_edge_1 = (0, 1);
     let adjacent_edge_2 = (1, 0);
 
-    let opposite_1 = origin.calculate_opposing_coordinates(adjacent_edge_1, BoardPositions::Edge);
-    let opposite_2 = origin.calculate_opposing_coordinates(adjacent_edge_2, BoardPositions::Edge);
-    let opposite_3 = origin.calculate_opposing_coordinates((1, 1), BoardPositions::Corner);
+    let opposite_1 = origin.calculate_opposing_coordinates(adjacent_edge_1);
+    let opposite_2 = origin.calculate_opposing_coordinates(adjacent_edge_2);
+    let opposite_3 = origin.calculate_opposing_coordinates((1, 1));
 
     assert_eq!(opposite_1, Some((0, 2)));
     assert_eq!(opposite_2, Some((2, 0)));
     assert_eq!(opposite_3, Some((2, 2)));
+  }
+
+  #[test]
+  fn is_diagonal_and_horizontal_logic_works() {
+    let origin = (0, 0);
+    let diagonal = (1, 1);
+    let horizontal = (0, 1);
+
+    if let Some(x) = origin.is_diagonal_from_origin(diagonal) {
+      println!("x is {:?}", x);
+    }
+
+    if let Some(x) = origin.is_across_from_origin(horizontal) {
+      println!("x is {:?}", x);
+    }
   }
 }
