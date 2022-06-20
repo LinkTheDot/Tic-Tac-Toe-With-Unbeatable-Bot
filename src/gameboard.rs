@@ -5,17 +5,17 @@ use crate::gameplay::GameConfig;
 pub struct BoardConfig {
   pub tiles: [[BoardTile; 3]; 3],
   pub tiles_covered: u8,
-  pub player_symbol: BoardState,
+  pub player_symbol: BoardStates,
 }
 
 #[derive(PartialEq, Clone, Debug)]
 pub struct BoardTile {
-  pub board_state: BoardState,
+  pub board_state: BoardStates,
   pub board_position: BoardPositions,
 }
 
 #[derive(PartialEq, Clone, Debug)]
-pub enum BoardState {
+pub enum BoardStates {
   X,
   O,
   Empty,
@@ -51,7 +51,7 @@ impl BoardConfig {
     BoardConfig {
       tiles,
       tiles_covered: 0,
-      player_symbol: BoardState::Empty,
+      player_symbol: BoardStates::Empty,
     }
   }
 
@@ -72,10 +72,10 @@ impl BoardConfig {
 
   pub fn matching_adjacent_tiles(&self, coords: Coordinates) -> Vec<Coordinates> {
     let adjacent_tiles = get_valid_coordinates_around(coords);
-    let matching_symbol: &BoardState = {
+    let matching_symbol: &BoardStates = {
       let symbol = &self.tiles[coords.0][coords.1].board_state;
 
-      if symbol == &BoardState::Empty {
+      if symbol == &BoardStates::Empty {
         return vec![];
       } else {
         symbol
@@ -90,50 +90,38 @@ impl BoardConfig {
   }
 
   pub fn coordinates_connected_to_three_in_a_row(&self, coordinates: Coordinates) -> bool {
-    // if the coord tile is a corner and has an adjacent tile of same symbol
-    // find the opposing tile of that direction through some logic check all 3
-    //
-    // use an equation to find the directions
-    //
-    // if coord tile is edge and adjacent is center, find opposing edge through some logic
-    // and check all 3
-    //
-    // if is edge and adjacent is corner, use same as corner logic to determine
-    // the opposing corner and check all 3
-
-    // - first find what position it is in
-    // - next determine where an adjacent is
-    // - iterate through them just incase there's multiple
-    // - iteration logic - (start a counter for adjacent matching symbols)
-    // - first if it's a corner OR edge that requires an opposing, find some algorithm
-    // to find that (probably use a separate implementation for it)
-    // - next if it's an edge that goes to a corner OR a center, take a direction and
-    // start from there instead then run step one
-    // - check if that counter from the start == 3 if not start the iteration over
-    // and keep trying until you run out of things to iterate through
-
     let origin_position = &self.tiles[coordinates.0][coordinates.1].board_position;
     let adjacent_matches = self.matching_adjacent_tiles(coordinates);
 
-    let _x = adjacent_matches.iter().map(|coords| coords);
+    adjacent_matches
+      .iter()
+      .filter(|coords| coordinates.is_matching_in_a_row(coords, self))
+      .count()
+      != 0
+  }
 
-    false
+  pub fn get_board_position(&self, coords: &Coordinates) -> &BoardPositions {
+    &self.tiles[coords.0][coords.1].board_position
+  }
+
+  pub fn get_board_state(&self, coords: &Coordinates) -> &BoardStates {
+    &self.tiles[coords.0][coords.1].board_state
   }
 }
 
 impl BoardTile {
   pub fn new(board_position: BoardPositions) -> Self {
     BoardTile {
-      board_state: BoardState::Empty,
+      board_state: BoardStates::Empty,
       board_position,
     }
   }
 
   pub fn board_state_to_string(&self) -> String {
     match self.board_state {
-      BoardState::X => "X".to_string(),
-      BoardState::O => "O".to_string(),
-      BoardState::Empty => "▮".to_string(),
+      BoardStates::X => "X".to_string(),
+      BoardStates::O => "O".to_string(),
+      BoardStates::Empty => "▮".to_string(),
     }
   }
 }
@@ -229,8 +217,8 @@ mod board_tests {
   pub fn matching_adjacent_tiles_logic_works() {
     let mut board_config = BoardConfig::new();
 
-    board_config.tiles[0][0].board_state = BoardState::X;
-    board_config.tiles[1][0].board_state = BoardState::X;
+    board_config.tiles[0][0].board_state = BoardStates::X;
+    board_config.tiles[1][0].board_state = BoardStates::X;
 
     let adjacent_matched_tiles = board_config.matching_adjacent_tiles((0, 0));
     let adjacent_empty_tile = board_config.matching_adjacent_tiles((1, 1));
