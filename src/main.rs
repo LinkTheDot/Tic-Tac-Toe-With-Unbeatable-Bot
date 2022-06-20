@@ -4,6 +4,7 @@ pub mod coordinate_methods;
 pub mod default_impls;
 pub mod gameboard;
 pub mod gameplay;
+pub mod tests;
 
 use crate::bot::*;
 use crate::gameboard::*;
