@@ -6,6 +6,7 @@ pub struct BoardConfig {
   pub tiles: [[BoardTile; 3]; 3],
   pub tiles_covered: u8,
   pub player_symbol: BoardStates,
+  pub last_modified_tile: Coordinates,
 }
 
 #[derive(PartialEq, Clone, Debug)]
@@ -52,6 +53,7 @@ impl BoardConfig {
       tiles,
       tiles_covered: 0,
       player_symbol: BoardStates::Empty,
+      last_modified_tile: (10, 10),
     }
   }
 
@@ -106,6 +108,34 @@ impl BoardConfig {
 
   pub fn get_board_state(&self, coords: &Coordinates) -> &BoardStates {
     &self.tiles[coords.0][coords.1].board_state
+  }
+
+  pub fn check_corner_states(&self) -> [(Coordinates, &BoardStates); 4] {
+    let top_left = (0, 0);
+    let top_right = (0, 2);
+    let bottom_left = (2, 0);
+    let bottom_right = (2, 2);
+
+    [
+      (top_left, self.get_board_state(&top_left)),
+      (top_right, self.get_board_state(&top_right)),
+      (bottom_left, self.get_board_state(&bottom_left)),
+      (bottom_right, self.get_board_state(&bottom_right)),
+    ]
+  }
+
+  pub fn check_edge_states(&self) -> [(Coordinates, &BoardStates); 4] {
+    let top = (0, 1);
+    let left = (1, 0);
+    let right = (1, 2);
+    let bottom = (2, 1);
+
+    [
+      (top, self.get_board_state(&top)),
+      (left, self.get_board_state(&left)),
+      (right, self.get_board_state(&right)),
+      (bottom, self.get_board_state(&bottom)),
+    ]
   }
 }
 

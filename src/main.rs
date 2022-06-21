@@ -1,7 +1,7 @@
 #![allow(unused)]
 pub mod bot;
 pub mod coordinate_methods;
-pub mod default_impls;
+pub mod defaults;
 pub mod gameboard;
 pub mod gameplay;
 pub mod tests;
