@@ -203,15 +203,16 @@ impl CoordinateMethods for Coordinates {
     false
   }
 
+  // merge with coordinates_connected_to_three_in_a_row if bot doesn't use
   fn is_matching_in_a_row(
     &self,
     adjacent_coords: &Coordinates,
     board_config: &BoardConfig,
   ) -> bool {
-    if let Some(x) = self.is_inbetween_matching(adjacent_coords, board_config) {
-      x
-    } else if let Some(x) = self.is_side_matching(adjacent_coords, board_config) {
-      x
+    if let Some(is_matching) = self.is_inbetween_matching(adjacent_coords, board_config) {
+      is_matching
+    } else if let Some(is_matching) = self.is_side_matching(adjacent_coords, board_config) {
+      is_matching
     } else {
       false
     }

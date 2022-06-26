@@ -72,7 +72,7 @@ impl BoardConfig {
     }
   }
 
-  pub fn matching_adjacent_tiles(&self, coords: Coordinates) -> Vec<Coordinates> {
+  pub fn matching_adjacent_tiles(&self, coords: &Coordinates) -> Vec<Coordinates> {
     let adjacent_tiles = get_valid_coordinates_around(coords);
     let matching_symbol: &BoardStates = {
       let symbol = &self.tiles[coords.0][coords.1].board_state;
@@ -86,13 +86,14 @@ impl BoardConfig {
 
     adjacent_tiles
       .iter()
-      .filter(|x| &self.tiles[x.0][x.1].board_state == matching_symbol)
+      .filter(|coords| &self.get_board_state(coords) == &matching_symbol)
       .cloned()
       .collect::<Vec<Coordinates>>()
   }
 
-  pub fn coordinates_connected_to_three_in_a_row(&self, coordinates: Coordinates) -> bool {
-    let origin_position = &self.tiles[coordinates.0][coordinates.1].board_position;
+  // remove coordinates and replace with self.last_modified_tile if bot doesn't use
+  pub fn coordinates_connected_to_three_in_a_row(&self, coordinates: &Coordinates) -> bool {
+    let origin_position = &self.get_board_position(coordinates);
     let adjacent_matches = self.matching_adjacent_tiles(coordinates);
 
     adjacent_matches
@@ -156,7 +157,7 @@ impl BoardTile {
   }
 }
 
-pub fn get_valid_coordinates_around(coordinates: Coordinates) -> Vec<Coordinates> {
+pub fn get_valid_coordinates_around(coordinates: &Coordinates) -> Vec<Coordinates> {
   let mut valid_coordinates: Vec<Coordinates> = Vec::new();
   let isize_coordinates = [
     coordinates.0.try_into().unwrap(),

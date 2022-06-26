@@ -115,9 +115,12 @@ mod gameplay_tests {
         .get_board_position(&latest_tile_center)
     );
 
-    assert_eq!(game_config.check_if_win(latest_tile_true), true);
-    assert_eq!(game_config.check_if_win(latest_tile_false), false);
-    assert_eq!(game_config.check_if_win(latest_tile_center), false);
+    game_config.game_board.last_modified_tile = latest_tile_true;
+    assert_eq!(game_config.check_if_win(), true);
+    game_config.game_board.last_modified_tile = latest_tile_false;
+    assert_eq!(game_config.check_if_win(), false);
+    game_config.game_board.last_modified_tile = latest_tile_center;
+    assert_eq!(game_config.check_if_win(), false);
   }
 }
 
@@ -144,19 +147,19 @@ mod board_tests {
     let mut center_coords_around_length: usize;
 
     for dummy_coords in corner_dummy_coords {
-      let coords = get_valid_coordinates_around(dummy_coords);
+      let coords = get_valid_coordinates_around(&dummy_coords);
 
       corner_coords_around_lengths.push(coords.len());
     }
 
     for dummy_coords in edge_dummy_coords {
-      let coords = get_valid_coordinates_around(dummy_coords);
+      let coords = get_valid_coordinates_around(&dummy_coords);
 
       edge_coords_around_lengths.push(coords.len());
     }
 
     {
-      let coords = get_valid_coordinates_around(center_dummy_coords);
+      let coords = get_valid_coordinates_around(&center_dummy_coords);
 
       center_coords_around_length = coords.len();
     }
@@ -173,8 +176,8 @@ mod board_tests {
     board_config.tiles[0][0].board_state = BoardStates::X;
     board_config.tiles[1][0].board_state = BoardStates::X;
 
-    let adjacent_matched_tiles = board_config.matching_adjacent_tiles((0, 0));
-    let adjacent_empty_tile = board_config.matching_adjacent_tiles((1, 1));
+    let adjacent_matched_tiles = board_config.matching_adjacent_tiles(&(0, 0));
+    let adjacent_empty_tile = board_config.matching_adjacent_tiles(&(1, 1));
     let empty_vec_because_bugged: Vec<Coordinates> = vec![];
 
     // checks if it returns real matching symbols
@@ -207,19 +210,19 @@ mod gameboard_tests {
     let mut center_coords_around_length: usize;
 
     for dummy_coords in corner_dummy_coords {
-      let coords = get_valid_coordinates_around(dummy_coords);
+      let coords = get_valid_coordinates_around(&dummy_coords);
 
       corner_coords_around_lengths.push(coords.len());
     }
 
     for dummy_coords in edge_dummy_coords {
-      let coords = get_valid_coordinates_around(dummy_coords);
+      let coords = get_valid_coordinates_around(&dummy_coords);
 
       edge_coords_around_lengths.push(coords.len());
     }
 
     {
-      let coords = get_valid_coordinates_around(center_dummy_coords);
+      let coords = get_valid_coordinates_around(&center_dummy_coords);
 
       center_coords_around_length = coords.len();
     }
@@ -236,8 +239,8 @@ mod gameboard_tests {
     board_config.tiles[0][0].board_state = BoardStates::X;
     board_config.tiles[1][0].board_state = BoardStates::X;
 
-    let adjacent_matched_tiles = board_config.matching_adjacent_tiles((0, 0));
-    let adjacent_empty_tile = board_config.matching_adjacent_tiles((1, 1));
+    let adjacent_matched_tiles = board_config.matching_adjacent_tiles(&(0, 0));
+    let adjacent_empty_tile = board_config.matching_adjacent_tiles(&(1, 1));
     let empty_vec_because_bugged: Vec<Coordinates> = vec![];
 
     // checks if it returns real matching symbols
