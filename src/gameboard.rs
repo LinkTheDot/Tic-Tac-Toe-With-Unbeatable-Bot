@@ -1,5 +1,6 @@
 use crate::coordinate_methods::*;
 use crate::gameplay::GameConfig;
+use rand::prelude::*;
 
 #[derive(PartialEq, Clone, Debug)]
 pub struct BoardConfig {
@@ -86,7 +87,7 @@ impl BoardConfig {
 
     adjacent_tiles
       .iter()
-      .filter(|coords| &self.get_board_state(coords) == &matching_symbol)
+      .filter(|coords| self.get_board_state(coords) == matching_symbol)
       .cloned()
       .collect::<Vec<Coordinates>>()
   }
@@ -137,6 +138,14 @@ impl BoardConfig {
       (right, self.get_board_state(&right)),
       (bottom, self.get_board_state(&bottom)),
     ]
+  }
+
+  pub fn get_random_empty_corner(&self) -> Coordinates {
+    todo!()
+  }
+
+  pub fn get_random_empty_edge(&self) -> Coordinates {
+    todo!()
   }
 }
 

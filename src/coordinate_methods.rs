@@ -18,11 +18,23 @@ pub trait CoordinateMethods {
     adjacent_coords: &Coordinates,
     board_config: &BoardConfig,
   ) -> Option<bool>;
+
   fn is_side_matching(
     &self,
     adjacent_coords: &Coordinates,
     board_config: &BoardConfig,
   ) -> Option<bool>;
+
+  fn get_edges_around_corner(&self) -> [Coordinates; 2];
+  fn get_corners_around_edge(&self) -> [Coordinates; 2];
+  fn get_all_edge_states(&self, gameboard: &BoardConfig) -> [Coordinates; 4];
+  fn get_all_corner_states(&self, gameboard: &BoardConfig) -> [Coordinates; 4];
+
+  fn check_if_win_is_possible(
+    &self,
+    gameboard: &BoardConfig,
+    check_from: Coordinates,
+  ) -> Option<Coordinates>;
 }
 
 impl CoordinateMethods for Coordinates {
@@ -252,5 +264,29 @@ impl CoordinateMethods for Coordinates {
     } else {
       None
     }
+  }
+
+  fn get_edges_around_corner(&self) -> [Coordinates; 2] {
+    todo!()
+  }
+
+  fn get_corners_around_edge(&self) -> [Coordinates; 2] {
+    todo!()
+  }
+
+  fn get_all_edge_states(&self, gameboard: &BoardConfig) -> [Coordinates; 4] {
+    todo!()
+  }
+
+  fn get_all_corner_states(&self, gameboard: &BoardConfig) -> [Coordinates; 4] {
+    todo!()
+  }
+
+  fn check_if_win_is_possible(
+    &self,
+    gameboard: &BoardConfig,
+    check_from: Coordinates,
+  ) -> Option<Coordinates> {
+    todo!()
   }
 }
