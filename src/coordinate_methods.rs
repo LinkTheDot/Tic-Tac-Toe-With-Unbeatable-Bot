@@ -3,6 +3,8 @@ use crate::gameplay::*;
 
 pub type Coordinates = (usize, usize);
 
+// implement <AsRef>
+
 pub trait CoordinateMethods {
   fn get_opposite_coordinates(&self, adjacent_coords: &Coordinates) -> Coordinates;
 

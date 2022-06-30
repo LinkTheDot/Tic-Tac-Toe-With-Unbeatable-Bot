@@ -4,7 +4,7 @@ use rand::*;
 use std::error::Error;
 use std::io;
 
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Debug)]
 pub struct GameConfig {
   pub player_turn: bool,
   pub player_symbol: BoardStates,

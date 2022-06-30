@@ -4,7 +4,7 @@ use crate::gameplay::*;
 use rand::prelude::*;
 use std::error::Error;
 
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Debug)]
 pub struct Bot {
   pub win_mode: WinChances,
   pub personal_board: BoardConfig,
@@ -57,8 +57,8 @@ impl Bot {
       player_has_center: false,
       path: CurrentPath::Unknown,
       bot_symbol: BoardStates::Empty,
-      chosen_placement: Err("".to_string()),
-      last_placed_tile: Err("".to_string()),
+      chosen_placement: Err("No error has been given".to_string()),
+      last_placed_tile: Err("No error has been given".to_string()),
     }
   }
 
@@ -117,8 +117,6 @@ impl Bot {
               self.chosen_placement = Err("Unknown center path".to_string());
             }
           }
-
-          ()
         }
         CurrentPath::NotCenter(_) => {
           // it's complaining that i'm changing what not_center_path in
@@ -158,7 +156,7 @@ impl Bot {
         }
       }
     } else {
-      // bunch of code shit* to make sure you never lose
+      // bunch of code shit to make sure you never lose
       // but also check if there's any opportunity to win
       // because the player is stupid
       //
@@ -209,7 +207,6 @@ impl Bot {
     &mut self,
     gameboard: &BoardConfig,
   ) -> Result<Coordinates, String> {
-    // get the other corner things
     match &self.path {
       CurrentPath::NotCenter(PlayerCenterPaths::Unknown) => {
         if let Ok(bot_tile) = &self.last_placed_tile {
@@ -226,27 +223,64 @@ impl Bot {
             self.block_player_win(&gameboard)
           }
         } else {
-          Err("Last tile is empty".to_string())
+          Err("Last placed tile is empty".to_string())
         }
       }
-      //                      --NOT FINISHED--
-      CurrentPath::NotCenter(PlayerCenterPaths::PlayerPlacedCornerNearEdge) => {
-        // do the thing with the stuff
-        // this part will come after the edge checks
-        Ok((0, 0)) // temp
+      CurrentPath::NotCenter(PlayerCenterPaths::PlayerPlacedEdgeNear) => {
+        match gameboard.get_board_position(&gameboard.last_modified_tile) {
+          BoardPositions::Corner => {
+            if gameboard
+              .last_modified_tile
+              .get_edges_around_corner()
+              .iter()
+              .filter(|coords| {
+                gameboard.get_board_state(&coords)
+                  == gameboard.get_board_state(&gameboard.last_modified_tile)
+              })
+              .count()
+              != 0
+            {
+              Ok(
+                gameboard
+                  .last_modified_tile
+                  .get_opposite_coordinates(&(1, 1)),
+              )
+            } else {
+              self.win_mode = WinChances::FocusDraw;
+              self.block_player_win(gameboard)
+            }
+          }
+          BoardPositions::Edge => {
+            self.win_mode = WinChances::FocusDraw;
+            self.block_player_win(gameboard)
+          }
+          _ => Err("Unknown board position".to_string()),
+        }
       }
       _ => Err("Unknown player path".to_string()),
     }
   }
 
   pub fn not_center_edge_checks(&mut self, gameboard: &BoardConfig) -> Result<Coordinates, String> {
-    // check if it's an edge near your corner
+    let edge_coords_around_bot_corner = self
+      .last_placed_tile
+      .as_ref()
+      .unwrap()
+      .get_edges_around_corner()
+      .into_iter()
+      .filter(|edge| edge == &gameboard.last_modified_tile)
+      .collect::<Vec<Coordinates>>();
 
-    // take the last input on the board (the player's)
-    // get the 2 edges around bot's corner
-    // check if either of the coordinates == the last input on the board
-    // else run 'block_player_win()' and FocusDraw
-    todo!()
+    if edge_coords_around_bot_corner.len() != 0 {
+      self.win_mode = WinChances::Guaranteed;
+      self.path = CurrentPath::NotCenter(PlayerCenterPaths::PlayerPlacedEdgeNear);
+
+      Ok(edge_coords_around_bot_corner[0].get_opposite_coordinates(&gameboard.last_modified_tile))
+    } else {
+      self.win_mode = WinChances::FocusDraw;
+
+      self.block_player_win(gameboard)
+    }
   }
 
   pub fn center_corner_checks(&mut self, gameboard: &BoardConfig) -> Result<Coordinates, String> {

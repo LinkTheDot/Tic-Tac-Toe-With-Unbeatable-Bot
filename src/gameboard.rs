@@ -2,7 +2,7 @@ use crate::coordinate_methods::*;
 use crate::gameplay::GameConfig;
 use rand::prelude::*;
 
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Debug)]
 pub struct BoardConfig {
   pub tiles: [[BoardTile; 3]; 3],
   pub tiles_covered: u8,
@@ -29,6 +29,8 @@ pub enum BoardPositions {
   Edge,
   Center,
 }
+
+// implement <AsRef>
 
 impl BoardConfig {
   pub fn new() -> Self {
