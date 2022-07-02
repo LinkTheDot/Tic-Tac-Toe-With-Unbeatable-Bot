@@ -30,8 +30,6 @@ pub enum BoardPositions {
   Center,
 }
 
-// implement <AsRef>
-
 impl BoardConfig {
   pub fn new() -> Self {
     let tiles = [
@@ -142,12 +140,38 @@ impl BoardConfig {
     ]
   }
 
-  pub fn get_random_empty_corner(&self) -> Coordinates {
-    todo!()
+  pub fn place_tile(&mut self, coords: Coordinates, changed_state: BoardStates) {
+    self.tiles[coords.0][coords.1].board_state = changed_state;
   }
 
-  pub fn get_random_empty_edge(&self) -> Coordinates {
-    todo!()
+  pub fn get_random_empty_corner(&self) -> Option<Coordinates> {
+    let corners: Vec<Coordinates> = vec![(0, 0), (2, 0), (0, 2), (2, 2)];
+
+    let mut valid_corners: Vec<Coordinates> = corners
+      .into_iter()
+      .filter(|coords| self.get_board_state(&coords) == &BoardStates::Empty)
+      .collect::<Vec<Coordinates>>();
+
+    if valid_corners.len() != 0 {
+      Some(valid_corners[rand::thread_rng().gen_range(0..valid_corners.len())])
+    } else {
+      None
+    }
+  }
+
+  pub fn get_random_empty_edge(&self) -> Option<Coordinates> {
+    let edges: Vec<Coordinates> = vec![(0, 1), (1, 0), (1, 2), (2, 1)];
+
+    let mut valid_corners: Vec<Coordinates> = edges
+      .into_iter()
+      .filter(|coords| self.get_board_state(&coords) == &BoardStates::Empty)
+      .collect::<Vec<Coordinates>>();
+
+    if valid_corners.len() != 0 {
+      Some(valid_corners[rand::thread_rng().gen_range(0..valid_corners.len())])
+    } else {
+      None
+    }
   }
 }
 

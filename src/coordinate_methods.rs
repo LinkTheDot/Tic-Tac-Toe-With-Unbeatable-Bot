@@ -3,13 +3,9 @@ use crate::gameplay::*;
 
 pub type Coordinates = (usize, usize);
 
-// implement <AsRef>
-
 pub trait CoordinateMethods {
   fn get_opposite_coordinates(&self, adjacent_coords: &Coordinates) -> Coordinates;
 
-  fn is_diagonal_from_return_self(&self, origin_coords: &Coordinates) -> Option<Coordinates>;
-  fn is_across_from_return_self(&self, origin_coords: &Coordinates) -> Option<Coordinates>;
   fn is_diagonal_from(&self, origin_coords: &Coordinates) -> bool;
   fn is_across_from(&self, origin_coords: &Coordinates) -> bool;
 
@@ -27,10 +23,7 @@ pub trait CoordinateMethods {
     board_config: &BoardConfig,
   ) -> Option<bool>;
 
-  fn get_edges_around_corner(&self) -> [Coordinates; 2];
-  fn get_corners_around_edge(&self) -> [Coordinates; 2];
-  fn get_all_edge_states(&self, gameboard: &BoardConfig) -> [Coordinates; 4];
-  fn get_all_corner_states(&self, gameboard: &BoardConfig) -> [Coordinates; 4];
+  fn get_coords_around_excluding_center(&self) -> Vec<Coordinates>;
 
   fn check_if_win_is_possible(
     &self,
@@ -59,84 +52,6 @@ impl CoordinateMethods for Coordinates {
         .try_into()
         .unwrap(),
     )
-  }
-
-  fn is_diagonal_from_return_self(&self, origin_coords: &Coordinates) -> Option<Coordinates> {
-    let isize_coordinates: [isize; 2] = [
-      origin_coords.0.try_into().unwrap(),
-      origin_coords.1.try_into().unwrap(),
-    ];
-
-    let possible_coordinates: Vec<(isize, isize)> = vec![
-      (isize_coordinates[0] + 1, isize_coordinates[1] + 1),
-      (isize_coordinates[0] - 1, isize_coordinates[1] + 1),
-      (isize_coordinates[0] + 1, isize_coordinates[1] - 1),
-      (isize_coordinates[0] - 1, isize_coordinates[1] - 1),
-    ];
-
-    for coordinates in possible_coordinates {
-      match coordinates.0 {
-        -1 => continue,
-        3 => continue,
-        _ => (),
-      }
-
-      match coordinates.1 {
-        -1 => continue,
-        3 => continue,
-        _ => (),
-      }
-
-      let usize_coordinates = (
-        coordinates.0.try_into().unwrap(),
-        coordinates.1.try_into().unwrap(),
-      );
-
-      if &usize_coordinates == self {
-        return Some(usize_coordinates);
-      };
-    }
-
-    None
-  }
-
-  fn is_across_from_return_self(&self, origin_coords: &Coordinates) -> Option<Coordinates> {
-    let isize_coordinates: [isize; 2] = [
-      origin_coords.0.try_into().unwrap(),
-      origin_coords.1.try_into().unwrap(),
-    ];
-
-    let possible_coordinates: Vec<(isize, isize)> = vec![
-      (isize_coordinates[0] + 1, isize_coordinates[1]),
-      (isize_coordinates[0] - 1, isize_coordinates[1]),
-      (isize_coordinates[0], isize_coordinates[1] + 1),
-      (isize_coordinates[0], isize_coordinates[1] - 1),
-    ];
-
-    for coordinates in possible_coordinates {
-      match coordinates.0 {
-        -1 => continue,
-        3 => continue,
-        _ => (),
-      }
-
-      match coordinates.1 {
-        -1 => continue,
-        3 => continue,
-        _ => (),
-      }
-
-      let usize_coordinates = (
-        coordinates.0.try_into().unwrap(),
-        coordinates.1.try_into().unwrap(),
-      );
-
-      if &usize_coordinates == self {
-        return Some(usize_coordinates);
-      };
-    }
-
-    None
   }
 
   fn is_diagonal_from(&self, origin_coords: &Coordinates) -> bool {
@@ -268,20 +183,28 @@ impl CoordinateMethods for Coordinates {
     }
   }
 
-  fn get_edges_around_corner(&self) -> [Coordinates; 2] {
-    todo!()
-  }
+  /// if you pass in an edge it'll return corners
+  /// if you pass in a corner it'll return edges
+  /// if you end up passing in the center then you'll get all edge i guess
+  fn get_coords_around_excluding_center(&self) -> Vec<Coordinates> {
+    let isize_coordinates: [isize; 2] = [self.0.try_into().unwrap(), self.1.try_into().unwrap()];
 
-  fn get_corners_around_edge(&self) -> [Coordinates; 2] {
-    todo!()
-  }
-
-  fn get_all_edge_states(&self, gameboard: &BoardConfig) -> [Coordinates; 4] {
-    todo!()
-  }
-
-  fn get_all_corner_states(&self, gameboard: &BoardConfig) -> [Coordinates; 4] {
-    todo!()
+    [
+      (isize_coordinates[0] + 1, isize_coordinates[1]),
+      (isize_coordinates[0] - 1, isize_coordinates[1]),
+      (isize_coordinates[0], isize_coordinates[1] + 1),
+      (isize_coordinates[0], isize_coordinates[1] - 1),
+    ]
+    .into_iter()
+    .filter(|coords| {
+      if coords.0 == -1 || coords.0 == 3 || coords.1 == -1 || coords.1 == 3 || coords == &(1, 1) {
+        false
+      } else {
+        true
+      }
+    })
+    .map(|coords| (coords.0.try_into().unwrap(), coords.1.try_into().unwrap()))
+    .collect::<Vec<(Coordinates)>>()
   }
 
   fn check_if_win_is_possible(
