@@ -24,12 +24,7 @@ pub trait CoordinateMethods {
   ) -> Option<bool>;
 
   fn get_coords_around_excluding_center(&self) -> Vec<Coordinates>;
-
-  fn check_if_win_is_possible(
-    &self,
-    gameboard: &BoardConfig,
-    check_from: Coordinates,
-  ) -> Option<Coordinates>;
+  fn get_coords_around(&self) -> Vec<Coordinates>;
 }
 
 impl CoordinateMethods for Coordinates {
@@ -207,11 +202,22 @@ impl CoordinateMethods for Coordinates {
     .collect::<Vec<(Coordinates)>>()
   }
 
-  fn check_if_win_is_possible(
-    &self,
-    gameboard: &BoardConfig,
-    check_from: Coordinates,
-  ) -> Option<Coordinates> {
-    todo!()
+  fn get_coords_around(&self) -> Vec<Coordinates> {
+    let isize_coordinates: [isize; 2] = [self.0.try_into().unwrap(), self.1.try_into().unwrap()];
+
+    [
+      (isize_coordinates[0] + 1, isize_coordinates[1]),
+      (isize_coordinates[0] - 1, isize_coordinates[1]),
+      (isize_coordinates[0], isize_coordinates[1] + 1),
+      (isize_coordinates[0], isize_coordinates[1] - 1),
+      (isize_coordinates[0] + 1, isize_coordinates[1] + 1),
+      (isize_coordinates[0] - 1, isize_coordinates[1] - 1),
+      (isize_coordinates[0] - 1, isize_coordinates[1] + 1),
+      (isize_coordinates[0] + 1, isize_coordinates[1] - 1),
+    ]
+    .into_iter()
+    .filter(|coords| coords.0 != -1 && coords.0 != 3 && coords.1 != -1 && coords.1 != 3)
+    .map(|coords| (coords.0.try_into().unwrap(), coords.1.try_into().unwrap()))
+    .collect::<Vec<(Coordinates)>>()
   }
 }

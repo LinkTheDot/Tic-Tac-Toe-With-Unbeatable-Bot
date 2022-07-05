@@ -62,3 +62,16 @@ fn is_inbetween_logic_works() {
   let origin = (1, 0);
   let adjacent_match = (1, 1);
 }
+
+#[test]
+fn get_coords_around_logic_works() {
+  let edge_coords = (1, 0);
+  let corner_coords = (0, 0);
+
+  let around_corner = corner_coords.get_coords_around();
+  let around_edge = edge_coords.get_coords_around();
+
+  println!("-corner coords-\n{:#?}", around_corner);
+  println!("\n\n\n\n");
+  println!("-edge coords-\n{:#?}", around_edge);
+}
