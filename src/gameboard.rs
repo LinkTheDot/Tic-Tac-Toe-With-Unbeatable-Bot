@@ -177,8 +177,6 @@ impl BoardConfig {
   /// If there is a series of 2, this will return the empty one in the series.
   /// Otherwise it'll return None.
   pub fn check_if_two_in_series(&self, check_from: &Coordinates) -> Option<Coordinates> {
-    let checking_state = self.get_board_state(check_from);
-
     let near_coords: Vec<Coordinates> = check_from
       .get_coords_around()
       .into_iter()
@@ -186,67 +184,8 @@ impl BoardConfig {
       .collect();
 
     match self.get_board_position(check_from) {
-      BoardPositions::Edge => {
-        let from_corner: Vec<Coordinates> = near_coords
-          .into_iter()
-          .filter(|coords| {
-            self.get_board_position(&coords) == &BoardPositions::Corner
-              && self.get_board_state(&coords) == checking_state
-              && self.get_board_state(&coords.get_opposite_coordinates(&check_from))
-                == &BoardStates::Empty
-          })
-          .collect();
-
-        let from_edge: Vec<Coordinates> = vec![
-          *check_from,
-          (1, 1),
-          check_from.get_opposite_coordinates(&(1, 1)),
-        ]
-        .into_iter()
-        .filter(|coords| self.get_board_state(&coords) == &BoardStates::Empty)
-        .collect();
-
-        if from_corner.len() == 1 {
-          Some(from_corner[0].get_opposite_coordinates(check_from))
-        } else if from_edge.len() == 1 {
-          Some(from_edge[0])
-        } else {
-          None
-        }
-      }
-      BoardPositions::Corner => {
-        let valid_empty_far_coords = near_coords
-          .iter()
-          .map(|coords| {
-            if self.get_board_state(&coords) == checking_state
-              && self.get_board_state(&check_from.get_opposite_coordinates(&coords))
-                == &BoardStates::Empty
-            {
-              check_from.get_opposite_coordinates(&coords)
-            } else {
-              (10, 10)
-            }
-          })
-          .filter(|coords| coords != &(10, 10))
-          .collect::<Vec<Coordinates>>();
-
-        let valid_empty_near_coords = near_coords
-          .iter()
-          .filter(|coords| {
-            self.get_board_state(&coords) == &BoardStates::Empty
-              && self.get_board_state(&check_from.get_opposite_coordinates(&coords))
-                == checking_state
-          })
-          .collect::<Vec<&Coordinates>>();
-
-        if valid_empty_far_coords.len() == 1 {
-          Some(valid_empty_far_coords[0])
-        } else if valid_empty_near_coords.len() == 1 {
-          Some(*valid_empty_near_coords[0])
-        } else {
-          None
-        }
-      }
+      BoardPositions::Edge => series_of_two_edge_check(self, check_from, near_coords),
+      BoardPositions::Corner => series_of_two_corner_check(self, check_from, near_coords),
       _ => None,
     }
   }
@@ -309,4 +248,79 @@ pub fn get_valid_coordinates_around(coordinates: &Coordinates) -> Vec<Coordinate
   }
 
   valid_coordinates
+}
+
+pub fn series_of_two_edge_check(
+  gameboard: &BoardConfig,
+  check_from: &Coordinates,
+  nearby_coords: Vec<Coordinates>,
+) -> Option<Coordinates> {
+  let checking_state = gameboard.get_board_state(check_from);
+
+  let from_corner: Vec<Coordinates> = nearby_coords
+    .into_iter()
+    .filter(|coords| {
+      gameboard.get_board_position(&coords) == &BoardPositions::Corner
+        && gameboard.get_board_state(&coords) == checking_state
+        && gameboard.get_board_state(&coords.get_opposite_coordinates(&check_from))
+          == &BoardStates::Empty
+    })
+    .collect();
+
+  let from_edge: Vec<Coordinates> = vec![
+    *check_from,
+    (1, 1),
+    check_from.get_opposite_coordinates(&(1, 1)),
+  ]
+  .into_iter()
+  .filter(|coords| gameboard.get_board_state(&coords) == &BoardStates::Empty)
+  .collect();
+
+  if from_corner.len() == 1 {
+    Some(from_corner[0].get_opposite_coordinates(check_from))
+  } else if from_edge.len() == 1 {
+    Some(from_edge[0])
+  } else {
+    None
+  }
+}
+
+pub fn series_of_two_corner_check(
+  gameboard: &BoardConfig,
+  check_from: &Coordinates,
+  nearby_coords: Vec<Coordinates>,
+) -> Option<Coordinates> {
+  let checking_state = gameboard.get_board_state(check_from);
+
+  let valid_empty_far_coords = nearby_coords
+    .iter()
+    .map(|coords| {
+      if gameboard.get_board_state(&coords) == checking_state
+        && gameboard.get_board_state(&check_from.get_opposite_coordinates(&coords))
+          == &BoardStates::Empty
+      {
+        check_from.get_opposite_coordinates(&coords)
+      } else {
+        (10, 10)
+      }
+    })
+    .filter(|coords| coords != &(10, 10))
+    .collect::<Vec<Coordinates>>();
+
+  let valid_empty_near_coords = nearby_coords
+    .iter()
+    .filter(|coords| {
+      gameboard.get_board_state(&coords) == &BoardStates::Empty
+        && gameboard.get_board_state(&check_from.get_opposite_coordinates(&coords))
+          == checking_state
+    })
+    .collect::<Vec<&Coordinates>>();
+
+  if valid_empty_far_coords.len() == 1 {
+    Some(valid_empty_far_coords[0])
+  } else if valid_empty_near_coords.len() == 1 {
+    Some(*valid_empty_near_coords[0])
+  } else {
+    None
+  }
 }
