@@ -1,6 +1,5 @@
-#[cfg(test)]
-use crate::coordinate_methods::*;
-use crate::gameboard::*;
+use tictactoe_with_ai::coordinate_methods::*;
+use tictactoe_with_ai::gameboard::*;
 
 #[test]
 fn calculate_opposing_coordinates_logic_works() {

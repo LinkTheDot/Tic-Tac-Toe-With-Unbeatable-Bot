@@ -1,8 +1,5 @@
 use crate::coordinate_methods::*;
 use crate::gameboard::*;
-use crate::gameplay::*;
-use rand::prelude::*;
-use std::error::Error;
 
 #[derive(PartialEq, Debug)]
 pub struct Bot {
@@ -85,10 +82,10 @@ impl Bot {
         // /
         match gameboard.get_board_position(&gameboard.last_modified_tile) {
           BoardPositions::Corner => {
-            self.chosen_placement = self.center_corner_checks(&gameboard);
+            self.chosen_placement = self.center_corner_checks(gameboard);
           }
           BoardPositions::Edge => {
-            self.chosen_placement = self.center_edge_checks(&gameboard);
+            self.chosen_placement = self.center_edge_checks(gameboard);
           }
           _ => self.chosen_placement = Err("Unknown board position".to_string()),
         }
@@ -96,10 +93,10 @@ impl Bot {
       CurrentPath::NotCenter(_) => {
         match gameboard.get_board_position(&gameboard.last_modified_tile) {
           BoardPositions::Corner => {
-            self.chosen_placement = self.not_center_corner_checks(&gameboard)
+            self.chosen_placement = self.not_center_corner_checks(gameboard)
           }
           BoardPositions::Edge => {
-            self.chosen_placement = self.not_center_edge_checks(&gameboard);
+            self.chosen_placement = self.not_center_edge_checks(gameboard);
           }
           _ => self.chosen_placement = Err("Unknown board position".to_string()),
         }
@@ -113,7 +110,7 @@ impl Bot {
         // pre-planned methods for coordinates and the bot
       }
       CurrentPath::Unknown => {
-        self.path = self.check_if_center_or_not(&gameboard);
+        self.path = self.check_if_center_or_not(gameboard);
 
         if self.path == CurrentPath::Center(BotCenterPaths::Unknown) {
           self.chosen_placement = Ok((1, 1));
@@ -182,7 +179,7 @@ impl Bot {
             Ok(gameboard.get_random_empty_corner().unwrap())
           } else {
             self.path = CurrentPath::FocusDraw;
-            self.block_player_win(&gameboard)
+            self.block_player_win(gameboard)
           }
         } else {
           Err("Last placed tile is empty".to_string())
@@ -194,7 +191,7 @@ impl Bot {
           .get_coords_around_excluding_center()
           .iter()
           .filter(|coords| {
-            gameboard.get_board_state(&coords)
+            gameboard.get_board_state(coords)
               == gameboard.get_board_state(&gameboard.last_modified_tile)
           })
           .count()
@@ -224,7 +221,7 @@ impl Bot {
       .filter(|edge| edge == &gameboard.last_modified_tile)
       .collect::<Vec<Coordinates>>();
 
-    if edge_coords_around_bot_corner.len() != 0 {
+    if !edge_coords_around_bot_corner.is_empty() {
       self.path = CurrentPath::NotCenter(PlayerCenterPaths::PlayerPlacedEdgeNear);
 
       Ok(edge_coords_around_bot_corner[0].get_opposite_coordinates(&(1, 1)))
@@ -235,22 +232,22 @@ impl Bot {
     }
   }
 
-  pub fn center_corner_checks(&mut self, gameboard: &BoardConfig) -> Result<Coordinates, String> {
+  pub fn center_corner_checks(&mut self, _gameboard: &BoardConfig) -> Result<Coordinates, String> {
     todo!()
   }
 
-  pub fn center_edge_checks(&mut self, gameboard: &BoardConfig) -> Result<Coordinates, String> {
+  pub fn center_edge_checks(&mut self, _gameboard: &BoardConfig) -> Result<Coordinates, String> {
     todo!()
   }
 
-  pub fn block_player_win(&self, gameboard: &BoardConfig) -> Result<Coordinates, String> {
+  pub fn block_player_win(&self, _gameboard: &BoardConfig) -> Result<Coordinates, String> {
     // take the last input from the player and see if there's a 2 in a row,
     // if so place opposite from that
     //
     // also check if anything across from theirs is a match
-
-    match gameboard.get_board_state(&gameboard.last_modified_tile) {
-      _ => Err("".to_string()),
-    }
+    todo!()
+    //match gameboard.get_board_state(&gameboard.last_modified_tile) {
+    //  _ => Err("".to_string()),
+    //}
   }
 }

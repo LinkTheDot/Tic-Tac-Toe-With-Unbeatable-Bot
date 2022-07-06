@@ -1,5 +1,4 @@
 use crate::gameboard::*;
-use crate::gameplay::*;
 
 pub type Coordinates = (usize, usize);
 
@@ -192,14 +191,10 @@ impl CoordinateMethods for Coordinates {
     ]
     .into_iter()
     .filter(|coords| {
-      if coords.0 == -1 || coords.0 == 3 || coords.1 == -1 || coords.1 == 3 || coords == &(1, 1) {
-        false
-      } else {
-        true
-      }
+      !coords.0 == -1 || coords.0 == 3 || coords.1 == -1 || coords.1 == 3 || coords == &(1, 1)
     })
     .map(|coords| (coords.0.try_into().unwrap(), coords.1.try_into().unwrap()))
-    .collect::<Vec<(Coordinates)>>()
+    .collect::<Vec<Coordinates>>()
   }
 
   fn get_coords_around(&self) -> Vec<Coordinates> {
@@ -218,6 +213,6 @@ impl CoordinateMethods for Coordinates {
     .into_iter()
     .filter(|coords| coords.0 != -1 && coords.0 != 3 && coords.1 != -1 && coords.1 != 3)
     .map(|coords| (coords.0.try_into().unwrap(), coords.1.try_into().unwrap()))
-    .collect::<Vec<(Coordinates)>>()
+    .collect::<Vec<Coordinates>>()
   }
 }

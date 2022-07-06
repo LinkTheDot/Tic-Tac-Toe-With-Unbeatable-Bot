@@ -1,6 +1,10 @@
 use crate::coordinate_methods::*;
-use crate::gameplay::GameConfig;
 use rand::prelude::*;
+use std::fmt::{Formatter, Result};
+
+const VISUALIZED_X: &str = "X";
+const VISUALIZED_O: &str = "O";
+const VISUALIZED_EMPTY: &str = "▮";
 
 #[derive(PartialEq, Debug)]
 pub struct BoardConfig {
@@ -34,19 +38,19 @@ impl BoardConfig {
   pub fn new() -> Self {
     let tiles = [
       [
-        BoardTile::new(BoardPositions::Corner),
-        BoardTile::new(BoardPositions::Edge),
-        BoardTile::new(BoardPositions::Corner),
+        BoardTile::from(BoardPositions::Corner),
+        BoardTile::from(BoardPositions::Edge),
+        BoardTile::from(BoardPositions::Corner),
       ],
       [
-        BoardTile::new(BoardPositions::Edge),
-        BoardTile::new(BoardPositions::Center),
-        BoardTile::new(BoardPositions::Edge),
+        BoardTile::from(BoardPositions::Edge),
+        BoardTile::from(BoardPositions::Center),
+        BoardTile::from(BoardPositions::Edge),
       ],
       [
-        BoardTile::new(BoardPositions::Corner),
-        BoardTile::new(BoardPositions::Edge),
-        BoardTile::new(BoardPositions::Corner),
+        BoardTile::from(BoardPositions::Corner),
+        BoardTile::from(BoardPositions::Edge),
+        BoardTile::from(BoardPositions::Corner),
       ],
     ];
 
@@ -54,7 +58,7 @@ impl BoardConfig {
       tiles,
       tiles_covered: 0,
       player_symbol: BoardStates::Empty,
-      last_modified_tile: (10, 10),
+      last_modified_tile: (69, 69), // make option
     }
   }
 
@@ -63,14 +67,16 @@ impl BoardConfig {
   }
 
   pub fn print_board(&self) {
-    for x in 0..3 {
-      println!(
-        "{}|{}|{}",
-        self.tiles[x][0].board_state_to_string(),
-        self.tiles[x][1].board_state_to_string(),
-        self.tiles[x][2].board_state_to_string(),
-      );
-    }
+    self
+      .tiles
+      .iter()
+      .flatten()
+      .collect::<Vec<&BoardTile>>()
+      .iter()
+      .map(|tile| format!("{}", tile))
+      .collect::<Vec<String>>()
+      .chunks(3)
+      .for_each(|row| println!("{}|{}|{}", row[0], row[1], row[2]));
   }
 
   pub fn matching_adjacent_tiles(&self, coords: &Coordinates) -> Vec<Coordinates> {
@@ -94,10 +100,8 @@ impl BoardConfig {
 
   // remove coordinates and replace with self.last_modified_tile if bot doesn't use
   pub fn coordinates_connected_to_three_in_a_row(&self, coordinates: &Coordinates) -> bool {
-    let origin_position = &self.get_board_position(coordinates);
-    let adjacent_matches = self.matching_adjacent_tiles(coordinates);
-
-    adjacent_matches
+    self
+      .matching_adjacent_tiles(coordinates)
       .iter()
       .filter(|coords| coordinates.is_matching_in_a_row(coords, self))
       .count()
@@ -147,12 +151,12 @@ impl BoardConfig {
   pub fn get_random_empty_corner(&self) -> Option<Coordinates> {
     let corners: Vec<Coordinates> = vec![(0, 0), (2, 0), (0, 2), (2, 2)];
 
-    let mut valid_corners: Vec<Coordinates> = corners
+    let valid_corners: Vec<Coordinates> = corners
       .into_iter()
-      .filter(|coords| self.get_board_state(&coords) == &BoardStates::Empty)
+      .filter(|coords| self.get_board_state(coords) == &BoardStates::Empty)
       .collect::<Vec<Coordinates>>();
 
-    if valid_corners.len() != 0 {
+    if !valid_corners.is_empty() {
       Some(valid_corners[rand::thread_rng().gen_range(0..valid_corners.len())])
     } else {
       None
@@ -162,12 +166,12 @@ impl BoardConfig {
   pub fn get_random_empty_edge(&self) -> Option<Coordinates> {
     let edges: Vec<Coordinates> = vec![(0, 1), (1, 0), (1, 2), (2, 1)];
 
-    let mut valid_corners: Vec<Coordinates> = edges
+    let valid_corners: Vec<Coordinates> = edges
       .into_iter()
-      .filter(|coords| self.get_board_state(&coords) == &BoardStates::Empty)
+      .filter(|coords| self.get_board_state(coords) == &BoardStates::Empty)
       .collect();
 
-    if valid_corners.len() != 0 {
+    if !valid_corners.is_empty() {
       Some(valid_corners[rand::thread_rng().gen_range(0..valid_corners.len())])
     } else {
       None
@@ -177,34 +181,38 @@ impl BoardConfig {
   /// If there is a series of 2, this will return the empty one in the series.
   /// Otherwise it'll return None.
   pub fn check_if_two_in_series(&self, check_from: &Coordinates) -> Option<Coordinates> {
-    let near_coords: Vec<Coordinates> = check_from
+    let nearby_coords: Vec<Coordinates> = check_from
       .get_coords_around()
       .into_iter()
-      .filter(|coords| self.get_board_position(&coords) != self.get_board_position(&check_from))
+      .filter(|coords| self.get_board_position(coords) != self.get_board_position(check_from))
       .collect();
 
     match self.get_board_position(check_from) {
-      BoardPositions::Edge => series_of_two_edge_check(self, check_from, near_coords),
-      BoardPositions::Corner => series_of_two_corner_check(self, check_from, near_coords),
+      BoardPositions::Edge => series_of_two_edge_check(self, check_from, nearby_coords),
+      BoardPositions::Corner => series_of_two_corner_check(self, check_from, nearby_coords),
       _ => None,
     }
   }
 }
 
 impl BoardTile {
-  pub fn new(board_position: BoardPositions) -> Self {
+  pub fn from(board_position: BoardPositions) -> Self {
     BoardTile {
       board_state: BoardStates::Empty,
       board_position,
     }
   }
+}
 
-  pub fn board_state_to_string(&self) -> String {
-    match self.board_state {
-      BoardStates::X => "X".to_string(),
-      BoardStates::O => "O".to_string(),
-      BoardStates::Empty => "▮".to_string(),
-    }
+impl std::fmt::Display for BoardTile {
+  fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+    let output = match self.board_state {
+      BoardStates::X => VISUALIZED_X,
+      BoardStates::O => VISUALIZED_O,
+      BoardStates::Empty => VISUALIZED_EMPTY,
+    };
+
+    write!(f, "{}", output)
   }
 }
 
@@ -255,14 +263,12 @@ pub fn series_of_two_edge_check(
   check_from: &Coordinates,
   nearby_coords: Vec<Coordinates>,
 ) -> Option<Coordinates> {
-  let checking_state = gameboard.get_board_state(check_from);
-
   let from_corner: Vec<Coordinates> = nearby_coords
     .into_iter()
     .filter(|coords| {
-      gameboard.get_board_position(&coords) == &BoardPositions::Corner
-        && gameboard.get_board_state(&coords) == checking_state
-        && gameboard.get_board_state(&coords.get_opposite_coordinates(&check_from))
+      gameboard.get_board_position(coords) == &BoardPositions::Corner
+        && gameboard.get_board_state(coords) == gameboard.get_board_state(check_from)
+        && gameboard.get_board_state(&coords.get_opposite_coordinates(check_from))
           == &BoardStates::Empty
     })
     .collect();
@@ -273,7 +279,7 @@ pub fn series_of_two_edge_check(
     check_from.get_opposite_coordinates(&(1, 1)),
   ]
   .into_iter()
-  .filter(|coords| gameboard.get_board_state(&coords) == &BoardStates::Empty)
+  .filter(|coords| gameboard.get_board_state(coords) == &BoardStates::Empty)
   .collect();
 
   if from_corner.len() == 1 {
@@ -294,25 +300,23 @@ pub fn series_of_two_corner_check(
 
   let valid_empty_far_coords = nearby_coords
     .iter()
-    .map(|coords| {
-      if gameboard.get_board_state(&coords) == checking_state
-        && gameboard.get_board_state(&check_from.get_opposite_coordinates(&coords))
+    .filter_map(|coords| {
+      if gameboard.get_board_state(coords) == checking_state
+        && gameboard.get_board_state(&check_from.get_opposite_coordinates(coords))
           == &BoardStates::Empty
       {
-        check_from.get_opposite_coordinates(&coords)
+        Some(check_from.get_opposite_coordinates(coords))
       } else {
-        (10, 10)
+        None
       }
     })
-    .filter(|coords| coords != &(10, 10))
     .collect::<Vec<Coordinates>>();
 
   let valid_empty_near_coords = nearby_coords
     .iter()
     .filter(|coords| {
-      gameboard.get_board_state(&coords) == &BoardStates::Empty
-        && gameboard.get_board_state(&check_from.get_opposite_coordinates(&coords))
-          == checking_state
+      gameboard.get_board_state(coords) == &BoardStates::Empty
+        && gameboard.get_board_state(&check_from.get_opposite_coordinates(coords)) == checking_state
     })
     .collect::<Vec<&Coordinates>>();
 

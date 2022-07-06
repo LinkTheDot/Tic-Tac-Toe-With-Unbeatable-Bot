@@ -1,6 +1,5 @@
-#[cfg(test)]
-use crate::gameboard::*;
-use crate::gameplay::*;
+use tictactoe_with_ai::gameboard::*;
+use tictactoe_with_ai::gameplay::*;
 
 #[test]
 fn testing_coordinate_conversion() {

@@ -1,6 +1,5 @@
-#[cfg(test)]
-use crate::coordinate_methods::*;
-use crate::gameboard::*;
+use tictactoe_with_ai::coordinate_methods::*;
+use tictactoe_with_ai::gameboard::*;
 
 #[test]
 fn boardconfig_new_works() {
@@ -74,7 +73,8 @@ fn two_in_series_logic_works() {
 
   println!("testing (0, 0) -> (0, 2)");
   let series = gameboard.check_if_two_in_series(&(0, 0));
-  assert_eq!(series, Some((0, 2)));
+  let expected_coordinates = Some((0, 2));
+  assert_eq!(series, expected_coordinates);
   println!("\n\n\n==Success! Got '{:?}'==\n\n\n", &series);
 
   // clear the board

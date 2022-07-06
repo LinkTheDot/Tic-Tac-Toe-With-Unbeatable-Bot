@@ -1,10 +1,7 @@
-#[cfg(test)]
-use crate::bot::*;
-use crate::coordinate_methods::*;
-use crate::gameboard::*;
-use crate::gameplay::*;
+use tictactoe_with_ai::bot::*;
+use tictactoe_with_ai::gameboard::*;
 
-#[test]
+#[ignore]
 pub fn not_center_checks_logic_works() {
   let mut gameboard = BoardConfig::new();
   let mut bot = Bot::new();
@@ -18,10 +15,10 @@ pub fn not_center_checks_logic_works() {
   bot.chosen_placement = bot.initial_check_of_player_center_paths(&gameboard);
 
   gameboard.place_tile(
-    *bot.chosen_placement.as_ref().unwrap_or_else(|err| {
-      eprintln!("An error has occurred '{}'", err);
-      &(10, 10)
-    }),
+    match bot.chosen_placement.as_ref() {
+      Ok(coords) => *coords,
+      Err(err) => panic!("err '{}'", err),
+    },
     BoardStates::O,
   );
 
@@ -32,10 +29,10 @@ pub fn not_center_checks_logic_works() {
     bot.chosen_placement = bot.not_center_corner_checks(&gameboard);
 
     gameboard.place_tile(
-      *bot.chosen_placement.as_ref().unwrap_or_else(|err| {
-        eprintln!("An error has occurred '{}'", err);
-        &(10, 10)
-      }),
+      match bot.chosen_placement.as_ref() {
+        Ok(coords) => *coords,
+        Err(err) => panic!("err '{}'", err),
+      },
       BoardStates::O,
     );
 
@@ -49,10 +46,10 @@ pub fn not_center_checks_logic_works() {
     bot.chosen_placement = bot.not_center_edge_checks(&gameboard);
 
     gameboard.place_tile(
-      *bot.chosen_placement.as_ref().unwrap_or_else(|err| {
-        eprintln!("An error has occurred '{}'", err);
-        &(10, 10)
-      }),
+      match bot.chosen_placement.as_ref() {
+        Ok(coords) => *coords,
+        Err(err) => panic!("err '{}'", err),
+      },
       BoardStates::O,
     );
 

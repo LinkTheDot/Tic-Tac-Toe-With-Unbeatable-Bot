@@ -1,6 +1,5 @@
 use crate::coordinate_methods::*;
 use crate::gameboard::*;
-use rand::*;
 use std::error::Error;
 use std::io;
 
@@ -70,7 +69,7 @@ pub fn run_gameplay() -> Result<(), Box<dyn Error>> {
     if gameconfig.player_turn {
       let selected_tile = match parse_player_input() {
         Ok(x) => x,
-        Err(y) => continue,
+        Err(_) => continue,
       };
 
       println!("selected tile = {:?}", selected_tile);
@@ -114,7 +113,7 @@ pub fn parse_player_input() -> Result<Coordinates, Box<dyn Error>> {
       }
     }
   } else if player_input.trim().len() == 2 {
-    let mut coord_1 = match player_input[0..1].to_lowercase().trim() {
+    let coord_1 = match player_input[0..1].to_lowercase().trim() {
       "a" => 0,
       "b" => 1,
       "c" => 2,
