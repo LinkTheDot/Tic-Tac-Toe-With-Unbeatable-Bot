@@ -21,14 +21,14 @@ mod check_if_win_logic {
     let checking_from = (0, 0);
     let expected_outcome = true;
 
-    game_config.game_board.last_modified_tile = checking_from;
+    game_config.gameboard.last_modified_tile = checking_from;
 
     //X|X|X
     //-|-|-
     //-|-|-
-    game_config.game_board.place_tile((0, 0), BoardStates::X);
-    game_config.game_board.place_tile((0, 1), BoardStates::X);
-    game_config.game_board.place_tile((0, 2), BoardStates::X);
+    game_config.gameboard.place_tile((0, 0), BoardStates::X);
+    game_config.gameboard.place_tile((0, 1), BoardStates::X);
+    game_config.gameboard.place_tile((0, 2), BoardStates::X);
 
     assert_eq!(game_config.check_if_win(), expected_outcome);
   }
@@ -39,14 +39,14 @@ mod check_if_win_logic {
     let checking_from = (1, 0);
     let expected_outcome = true;
 
-    game_config.game_board.last_modified_tile = checking_from;
+    game_config.gameboard.last_modified_tile = checking_from;
 
     //X|-|-
     //X|-|-
     //X|-|-
-    game_config.game_board.place_tile((0, 0), BoardStates::X);
-    game_config.game_board.place_tile((1, 0), BoardStates::X);
-    game_config.game_board.place_tile((2, 0), BoardStates::X);
+    game_config.gameboard.place_tile((0, 0), BoardStates::X);
+    game_config.gameboard.place_tile((1, 0), BoardStates::X);
+    game_config.gameboard.place_tile((2, 0), BoardStates::X);
 
     assert_eq!(game_config.check_if_win(), expected_outcome);
   }
@@ -57,13 +57,13 @@ mod check_if_win_logic {
     let checking_from = (1, 0);
     let expected_outcome = false;
 
-    game_config.game_board.last_modified_tile = checking_from;
+    game_config.gameboard.last_modified_tile = checking_from;
 
     //X|-|-
     //X|-|-
     //-|-|-
-    game_config.game_board.place_tile((0, 0), BoardStates::X);
-    game_config.game_board.place_tile((1, 0), BoardStates::X);
+    game_config.gameboard.place_tile((0, 0), BoardStates::X);
+    game_config.gameboard.place_tile((1, 0), BoardStates::X);
 
     assert_eq!(game_config.check_if_win(), expected_outcome);
   }
@@ -74,14 +74,14 @@ mod check_if_win_logic {
     let checking_from = (1, 1);
     let expected_outcome = false;
 
-    game_config.game_board.last_modified_tile = checking_from;
+    game_config.gameboard.last_modified_tile = checking_from;
 
     //-|O|-
     //-|X|-
     //-|X|-
-    game_config.game_board.place_tile((0, 1), BoardStates::O);
-    game_config.game_board.place_tile((1, 1), BoardStates::X);
-    game_config.game_board.place_tile((2, 1), BoardStates::X);
+    game_config.gameboard.place_tile((0, 1), BoardStates::O);
+    game_config.gameboard.place_tile((1, 1), BoardStates::X);
+    game_config.gameboard.place_tile((2, 1), BoardStates::X);
 
     assert_eq!(game_config.check_if_win(), expected_outcome);
   }

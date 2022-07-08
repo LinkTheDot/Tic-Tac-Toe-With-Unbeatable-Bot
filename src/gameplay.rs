@@ -7,15 +7,15 @@ use std::io;
 pub struct GameConfig {
   pub player_turn: bool,
   pub player_symbol: BoardStates,
-  pub game_board: BoardConfig,
-  pub game_state: GameState,
+  pub gameboard: BoardConfig,
+  pub gamestate: GameState,
 }
 
 impl GameConfig {
   pub fn new() -> GameConfig {
     let player_turn = rand::random::<bool>();
-    let game_board = BoardConfig::new();
-    let game_state = GameState::OnGoing;
+    let gameboard = BoardConfig::new();
+    let gamestate = GameState::OnGoing;
     let player_symbol = if player_turn {
       BoardStates::X
     } else {
@@ -25,15 +25,15 @@ impl GameConfig {
     GameConfig {
       player_turn,
       player_symbol,
-      game_board,
-      game_state,
+      gameboard,
+      gamestate,
     }
   }
 
   pub fn check_if_win(&mut self) -> bool {
     self
-      .game_board
-      .coordinates_connected_to_three_in_a_row(&self.game_board.last_modified_tile)
+      .gameboard
+      .coordinates_connected_to_three_in_a_row(&self.gameboard.last_modified_tile)
   }
 
   pub fn player_symbol_to_game_state(&mut self) -> GameState {
@@ -41,7 +41,7 @@ impl GameConfig {
       BoardStates::X => GameState::XWon,
       BoardStates::O => GameState::OWon,
       _ => {
-        if self.game_board.tiles_covered == 9 {
+        if self.gameboard.tiles_covered == 9 {
           GameState::Draw
         } else {
           GameState::OnGoing
@@ -62,8 +62,8 @@ pub enum GameState {
 pub fn run_gameplay() -> Result<(), Box<dyn Error>> {
   let mut gameconfig = GameConfig::new();
 
-  while gameconfig.game_board.tiles_covered < 9 {
-    gameconfig.game_board.print_board();
+  while gameconfig.gameboard.tiles_covered < 9 {
+    gameconfig.gameboard.print_board();
     println!();
 
     if gameconfig.player_turn {
@@ -74,24 +74,25 @@ pub fn run_gameplay() -> Result<(), Box<dyn Error>> {
 
       println!("selected tile = {:?}", selected_tile);
 
-      if gameconfig.game_board.tiles[selected_tile.0][selected_tile.1].board_state
-        == BoardStates::Empty
-      {
-        gameconfig.game_board.tiles[selected_tile.0][selected_tile.1].board_state =
-          gameconfig.player_symbol.clone();
+      if gameconfig.gameboard.get_board_state(&selected_tile) == &BoardStates::Empty {
+        gameconfig
+          .gameboard
+          .place_tile(selected_tile, gameconfig.player_symbol.clone()); // implement AsRef so you don't have to clone here
 
-        gameconfig.game_board.tiles_covered += 1;
+        gameconfig.gameboard.last_modified_tile = selected_tile;
+        gameconfig.gameboard.tiles_covered += 1;
         gameconfig.player_turn = false;
       }
 
       if gameconfig.check_if_win() {
-        gameconfig.game_state = gameconfig.player_symbol_to_game_state();
+        gameconfig.gamestate = gameconfig.player_symbol_to_game_state();
         break;
       }
     } else {
       // insert bot code
 
       //temp stuff until i do add it
+      println!(" -- bot turn over -- ");
       gameconfig.player_turn = true;
       continue;
     }
