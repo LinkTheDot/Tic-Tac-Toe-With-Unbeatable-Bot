@@ -1,5 +1,8 @@
 use crate::gameboard::*;
 
+pub const GRID_SIZE: usize = 3;
+pub const ISIZE_GRID_SIZE: isize = 3;
+
 pub type Coordinates = (usize, usize);
 
 pub trait CoordinateMethods {
@@ -10,7 +13,7 @@ pub trait CoordinateMethods {
 
   fn is_matching_in_a_row(&self, adjacent_coords: &Coordinates, board_config: &BoardConfig)
     -> bool;
-  fn is_inbetween_matching(
+  fn is_in_between_matching(
     &self,
     adjacent_coords: &Coordinates,
     board_config: &BoardConfig,
@@ -64,7 +67,7 @@ impl CoordinateMethods for Coordinates {
     for coordinates in possible_coordinates {
       match coordinates.0 {
         -1 => continue,
-        3 => continue,
+        _x if _x == ISIZE_GRID_SIZE => continue,
         _ => (),
       }
 
@@ -132,7 +135,7 @@ impl CoordinateMethods for Coordinates {
     adjacent_coords: &Coordinates,
     board_config: &BoardConfig,
   ) -> bool {
-    if let Some(is_matching) = self.is_inbetween_matching(adjacent_coords, board_config) {
+    if let Some(is_matching) = self.is_in_between_matching(adjacent_coords, board_config) {
       is_matching
     } else if let Some(is_matching) = self.is_side_matching(adjacent_coords, board_config) {
       is_matching
@@ -141,7 +144,7 @@ impl CoordinateMethods for Coordinates {
     }
   }
 
-  fn is_inbetween_matching(
+  fn is_in_between_matching(
     &self,
     adjacent_coords: &Coordinates,
     board_config: &BoardConfig,
@@ -151,9 +154,11 @@ impl CoordinateMethods for Coordinates {
 
       Some(board_config.get_board_state(&opposite_coords) == board_config.get_board_state(self))
     } else if board_config.get_board_position(self) == &BoardPositions::Edge
-      && board_config.get_board_position(adjacent_coords) == &BoardPositions::Center
+      && board_config.get_board_position(adjacent_coords) != &BoardPositions::Center
+      && board_config.get_board_position(adjacent_coords) != &BoardPositions::Edge
     {
-      let opposite_coords = self.get_opposite_coordinates(adjacent_coords);
+      println!(" running in between self == edge and != center ");
+      let opposite_coords = adjacent_coords.get_opposite_coordinates(self);
 
       Some(board_config.get_board_state(&opposite_coords) == board_config.get_board_state(self))
     } else {

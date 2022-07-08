@@ -1,44 +1,88 @@
+use tictactoe_with_ai::coordinate_methods::GRID_SIZE;
 use tictactoe_with_ai::gameboard::*;
 use tictactoe_with_ai::gameplay::*;
 
 #[test]
 fn testing_coordinate_conversion() {
-  let num = 5;
+  let index_at = 5;
+  let coordinate_conversion = ((index_at - 1) / GRID_SIZE, (index_at - 1) % GRID_SIZE);
+  let expected_outcome = (1, 1);
 
-  assert_eq!(((num - 1) / 3, (num - 1) % 3), (1, 1))
+  assert_eq!(coordinate_conversion, expected_outcome);
 }
 
-#[test]
-fn check_if_win_logic_works() {
-  let mut game_config = GameConfig::new();
-  let latest_tile_true = (0, 0);
-  let latest_tile_false = (1, 0); // edge that's same but not in row
-  let latest_tile_center = (1, 1);
+#[cfg(test)]
+mod check_if_win_logic {
+  use super::*;
 
-  //for latest_tile_true
-  game_config.game_board.tiles[0][0].board_state = BoardStates::X;
-  game_config.game_board.tiles[0][1].board_state = BoardStates::X;
-  game_config.game_board.tiles[0][2].board_state = BoardStates::X;
+  #[test]
+  fn side_vaild_win() {
+    let mut game_config = GameConfig::new();
+    let checking_from = (0, 0);
+    let expected_outcome = true;
 
-  //for latest_tile_false
-  game_config.game_board.tiles[1][0].board_state = BoardStates::X;
+    game_config.game_board.last_modified_tile = checking_from;
 
-  //center to edge/corner
-  game_config.game_board.tiles[1][1].board_state = BoardStates::O;
-  game_config.game_board.tiles[2][0].board_state = BoardStates::O;
-  game_config.game_board.tiles[2][1].board_state = BoardStates::O;
+    //X|X|X
+    //-|-|-
+    //-|-|-
+    game_config.game_board.place_tile((0, 0), BoardStates::X);
+    game_config.game_board.place_tile((0, 1), BoardStates::X);
+    game_config.game_board.place_tile((0, 2), BoardStates::X);
 
-  println!(
-    "{:?}",
-    game_config
-      .game_board
-      .get_board_position(&latest_tile_center)
-  );
+    assert_eq!(game_config.check_if_win(), expected_outcome);
+  }
 
-  game_config.game_board.last_modified_tile = latest_tile_true;
-  assert_eq!(game_config.check_if_win(), true);
-  game_config.game_board.last_modified_tile = latest_tile_false;
-  assert_eq!(game_config.check_if_win(), false);
-  game_config.game_board.last_modified_tile = latest_tile_center;
-  assert_eq!(game_config.check_if_win(), false);
+  #[test]
+  fn in_between_valid_win() {
+    let mut game_config = GameConfig::new();
+    let checking_from = (1, 0);
+    let expected_outcome = true;
+
+    game_config.game_board.last_modified_tile = checking_from;
+
+    //X|-|-
+    //X|-|-
+    //X|-|-
+    game_config.game_board.place_tile((0, 0), BoardStates::X);
+    game_config.game_board.place_tile((1, 0), BoardStates::X);
+    game_config.game_board.place_tile((2, 0), BoardStates::X);
+
+    assert_eq!(game_config.check_if_win(), expected_outcome);
+  }
+
+  #[test]
+  fn two_in_a_row_possible_overflow() {
+    let mut game_config = GameConfig::new();
+    let checking_from = (1, 0);
+    let expected_outcome = false;
+
+    game_config.game_board.last_modified_tile = checking_from;
+
+    //X|-|-
+    //X|-|-
+    //-|-|-
+    game_config.game_board.place_tile((0, 0), BoardStates::X);
+    game_config.game_board.place_tile((1, 0), BoardStates::X);
+
+    assert_eq!(game_config.check_if_win(), expected_outcome);
+  }
+
+  #[test]
+  fn only_same_symbols_match() {
+    let mut game_config = GameConfig::new();
+    let checking_from = (1, 1);
+    let expected_outcome = false;
+
+    game_config.game_board.last_modified_tile = checking_from;
+
+    //-|O|-
+    //-|X|-
+    //-|X|-
+    game_config.game_board.place_tile((0, 1), BoardStates::O);
+    game_config.game_board.place_tile((1, 1), BoardStates::X);
+    game_config.game_board.place_tile((2, 1), BoardStates::X);
+
+    assert_eq!(game_config.check_if_win(), expected_outcome);
+  }
 }

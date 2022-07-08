@@ -8,128 +8,145 @@ fn boardconfig_new_works() {
   assert_eq!(board.tiles_covered, 0);
 }
 
-#[test]
-fn get_valid_coordinates_around_works() {
-  let corner_dummy_coords = vec![(0, 0), (2, 0), (0, 2), (2, 2)];
+#[cfg(test)]
+mod get_valid_coordinates_around_logic {
+  use super::*;
 
-  let edge_dummy_coords = vec![(1, 0), (0, 1), (1, 2), (2, 1)];
+  #[test]
+  fn from_edge_coords() {
+    let edge_coords = vec![(1, 0), (0, 1), (1, 2), (2, 1)];
+    let expected_edge_return_counts = vec![5, 5, 5, 5];
 
-  let center_dummy_coords = (1, 1);
-  let mut corner_coords_around_lengths: Vec<usize> = Vec::new();
-  let mut edge_coords_around_lengths: Vec<usize> = Vec::new();
-  let mut center_coords_around_length: usize;
+    let amount_of_coords_around_edges = edge_coords
+      .into_iter()
+      .map(|coords| get_valid_coordinates_around(&coords).len())
+      .collect::<Vec<usize>>();
 
-  for dummy_coords in corner_dummy_coords {
-    let coords = get_valid_coordinates_around(&dummy_coords);
-
-    corner_coords_around_lengths.push(coords.len());
+    assert_eq!(expected_edge_return_counts, amount_of_coords_around_edges);
   }
 
-  for dummy_coords in edge_dummy_coords {
-    let coords = get_valid_coordinates_around(&dummy_coords);
+  #[test]
+  fn from_corner_coords() {
+    let corner_coords = vec![(0, 0), (2, 0), (0, 2), (2, 2)];
+    let expected_corner_return_counts = vec![3, 3, 3, 3];
 
-    edge_coords_around_lengths.push(coords.len());
+    let amount_of_coords_around_corners = corner_coords
+      .into_iter()
+      .map(|coords| get_valid_coordinates_around(&coords).len())
+      .collect::<Vec<usize>>();
+
+    assert_eq!(
+      expected_corner_return_counts,
+      amount_of_coords_around_corners
+    );
   }
 
-  {
-    let coords = get_valid_coordinates_around(&center_dummy_coords);
+  #[test]
+  fn from_center_coords() {
+    let center_coords = (1, 1);
+    let expected_center_return_counts = 8;
 
-    center_coords_around_length = coords.len();
+    let amount_of_coords_around_center = get_valid_coordinates_around(&center_coords).len();
+    assert_eq!(
+      expected_center_return_counts,
+      amount_of_coords_around_center
+    );
   }
-
-  assert_eq!(vec![3, 3, 3, 3], corner_coords_around_lengths);
-  assert_eq!(vec![5, 5, 5, 5], edge_coords_around_lengths);
-  assert_eq!(8, center_coords_around_length);
 }
 
 #[test]
 fn matching_adjacent_tiles_logic_works() {
-  let mut board_config = BoardConfig::new();
+  let mut boardconfig = BoardConfig::new();
+  let expected_adjacent_match = vec![(1, 0)];
+  let expected_empty_value: Vec<Coordinates> = vec![];
+  let check_around_x_value = (0, 0);
+  let check_around_empty_value = (1, 1);
 
-  board_config.tiles[0][0].board_state = BoardStates::X;
-  board_config.tiles[1][0].board_state = BoardStates::X;
+  //X|-|-
+  //X|-|-
+  //-|-|-
+  boardconfig.place_tile((0, 0), BoardStates::X);
+  boardconfig.place_tile((1, 0), BoardStates::X);
 
-  let adjacent_matched_tiles = board_config.matching_adjacent_tiles(&(0, 0));
-  let adjacent_empty_tile = board_config.matching_adjacent_tiles(&(1, 1));
-  let empty_vec_because_bugged: Vec<Coordinates> = vec![];
+  let adjacent_matched_tiles = boardconfig.matching_adjacent_tiles(&check_around_x_value);
+  let adjacent_empty_tile = boardconfig.matching_adjacent_tiles(&check_around_empty_value);
 
-  // checks if it returns real matching symbols
-  assert_eq!(vec![(1, 0)], adjacent_matched_tiles);
-  // checks if it returns nothing when the tile symbol is Empty
-  assert_eq!(empty_vec_because_bugged, adjacent_empty_tile);
+  assert_eq!(expected_adjacent_match, adjacent_matched_tiles);
+  assert_eq!(expected_empty_value, adjacent_empty_tile);
 }
 
-#[test]
-fn two_in_series_logic_works() {
-  let mut gameboard = BoardConfig::new();
+#[cfg(test)]
+mod two_in_series {
+  use super::*;
 
-  // X|X|-
-  // X|-|-
-  // O|-|-
-  gameboard.place_tile((0, 0), BoardStates::X);
-  gameboard.place_tile((0, 1), BoardStates::X);
-  gameboard.place_tile((1, 0), BoardStates::X);
-  gameboard.place_tile((2, 0), BoardStates::O);
+  #[test]
+  fn corner_over_edges_with_fake_over() {
+    let mut gameboard = BoardConfig::new();
+    let expected_coordinates = Some((0, 2));
 
-  println!("testing (0, 0) -> (0, 2)");
-  let series = gameboard.check_if_two_in_series(&(0, 0));
-  let expected_coordinates = Some((0, 2));
-  assert_eq!(series, expected_coordinates);
-  println!("\n\n\n==Success! Got '{:?}'==\n\n\n", &series);
+    // X|X|-
+    // X|-|-
+    // O|-|-
+    gameboard.place_tile((0, 0), BoardStates::X);
+    gameboard.place_tile((0, 1), BoardStates::X);
+    gameboard.place_tile((1, 0), BoardStates::X);
+    gameboard.place_tile((2, 0), BoardStates::O);
 
-  // clear the board
-  gameboard.place_tile((0, 0), BoardStates::Empty);
-  gameboard.place_tile((0, 1), BoardStates::Empty);
-  gameboard.place_tile((1, 0), BoardStates::Empty);
-  gameboard.place_tile((2, 0), BoardStates::Empty);
+    let series = gameboard.check_if_two_in_series(&(0, 0));
 
-  // X|-|-
-  // O|-|-
-  // -|-|X
+    assert_eq!(series, expected_coordinates);
+  }
 
-  gameboard.place_tile((0, 0), BoardStates::X);
-  gameboard.place_tile((2, 2), BoardStates::X);
-  gameboard.place_tile((1, 0), BoardStates::O);
+  #[test]
+  fn corner_check_over_center_with_fake_near() {
+    let mut gameboard = BoardConfig::new();
+    let expected_coordinates = Some((1, 1));
 
-  println!("testing (0, 0) -> (1, 1)");
-  let series = gameboard.check_if_two_in_series(&(0, 0));
-  assert_eq!(series, Some((1, 1)));
-  println!("\n\n\n==Success! Got '{:?}'==\n\n\n", &series);
+    // X|-|-
+    // O|-|-
+    // -|-|X
+    gameboard.place_tile((0, 0), BoardStates::X);
+    gameboard.place_tile((2, 2), BoardStates::X);
+    gameboard.place_tile((1, 0), BoardStates::O);
 
-  // clear the board
-  gameboard.place_tile((0, 0), BoardStates::Empty);
-  gameboard.place_tile((2, 2), BoardStates::Empty);
-  gameboard.place_tile((1, 0), BoardStates::Empty);
+    let series = gameboard.check_if_two_in_series(&(0, 0));
 
-  // X|-|-
-  // X|-|X
-  // O|-|-
-  gameboard.place_tile((0, 0), BoardStates::X);
-  gameboard.place_tile((1, 0), BoardStates::X);
-  gameboard.place_tile((1, 2), BoardStates::X);
-  gameboard.place_tile((2, 0), BoardStates::O);
+    assert_eq!(series, expected_coordinates);
+  }
 
-  println!("testing (1, 0) -> (1, 1)");
-  let series = gameboard.check_if_two_in_series(&(1, 0));
-  assert_eq!(series, Some((1, 1)));
-  println!("\n\n\n==Success! Got '{:?}'==\n\n\n", &series);
+  #[test]
+  fn edge_with_fake_corner_check_and_over_center() {
+    let mut gameboard = BoardConfig::new();
+    let expected_coordinates = Some((1, 1));
 
-  // clear the board
-  gameboard.place_tile((0, 0), BoardStates::Empty);
-  gameboard.place_tile((1, 0), BoardStates::Empty);
-  gameboard.place_tile((1, 2), BoardStates::Empty);
-  gameboard.place_tile((2, 0), BoardStates::Empty);
+    // X|-|-
+    // X|-|X
+    // O|-|-
+    gameboard.place_tile((0, 0), BoardStates::X);
+    gameboard.place_tile((1, 0), BoardStates::X);
+    gameboard.place_tile((1, 2), BoardStates::X);
+    gameboard.place_tile((2, 0), BoardStates::O);
 
-  // X|-|-
-  // X|O|X
-  // -|-|-
-  gameboard.place_tile((0, 0), BoardStates::X);
-  gameboard.place_tile((1, 0), BoardStates::X);
-  gameboard.place_tile((1, 2), BoardStates::X);
-  gameboard.place_tile((1, 1), BoardStates::O);
+    let series = gameboard.check_if_two_in_series(&(1, 0));
 
-  println!("testing (1, 0) -> (2, 0)");
-  let series = gameboard.check_if_two_in_series(&(1, 0));
-  assert_eq!(series, Some((2, 0)));
-  println!("\n\n\n==Success! Got '{:?}'==\n\n\n", &series);
+    assert_eq!(series, expected_coordinates);
+  }
+
+  #[test]
+  fn edge_from_corner_fake_over_center() {
+    let mut gameboard = BoardConfig::new();
+    let expected_coordinates = Some((2, 0));
+
+    // X|-|-
+    // X|O|X
+    // -|-|-
+    gameboard.place_tile((0, 0), BoardStates::X);
+    gameboard.place_tile((1, 0), BoardStates::X);
+    gameboard.place_tile((1, 2), BoardStates::X);
+    gameboard.place_tile((1, 1), BoardStates::O);
+
+    let series = gameboard.check_if_two_in_series(&(1, 0));
+
+    assert_eq!(series, expected_coordinates);
+  }
 }

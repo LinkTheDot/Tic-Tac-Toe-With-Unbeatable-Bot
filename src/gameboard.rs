@@ -8,7 +8,7 @@ const VISUALIZED_EMPTY: &str = "▮";
 
 #[derive(PartialEq, Debug)]
 pub struct BoardConfig {
-  pub tiles: [[BoardTile; 3]; 3],
+  pub tiles: [[BoardTile; GRID_SIZE]; GRID_SIZE],
   pub tiles_covered: u8,
   pub player_symbol: BoardStates,
   pub last_modified_tile: Coordinates,
@@ -71,20 +71,19 @@ impl BoardConfig {
       .tiles
       .iter()
       .flatten()
-      .collect::<Vec<&BoardTile>>()
-      .iter()
       .map(|tile| format!("{}", tile))
       .collect::<Vec<String>>()
-      .chunks(3)
+      .chunks(GRID_SIZE)
       .for_each(|row| println!("{}|{}|{}", row[0], row[1], row[2]));
   }
 
+  /// this will return all coordinates around an input that are of the same boardstate
   pub fn matching_adjacent_tiles(&self, coords: &Coordinates) -> Vec<Coordinates> {
     let adjacent_tiles = get_valid_coordinates_around(coords);
     let matching_symbol: &BoardStates = {
-      let symbol = &self.tiles[coords.0][coords.1].board_state;
+      let symbol = &self.get_board_state(coords);
 
-      if symbol == &BoardStates::Empty {
+      if *symbol == &BoardStates::Empty {
         return vec![];
       } else {
         symbol
@@ -237,13 +236,13 @@ pub fn get_valid_coordinates_around(coordinates: &Coordinates) -> Vec<Coordinate
   for coordinates in possible_coordinates {
     match coordinates.0 {
       -1 => continue,
-      3 => continue,
+      _x if _x == ISIZE_GRID_SIZE => continue,
       _ => (),
     }
 
     match coordinates.1 {
       -1 => continue,
-      3 => continue,
+      _x if _x == ISIZE_GRID_SIZE => continue,
       _ => (),
     }
 

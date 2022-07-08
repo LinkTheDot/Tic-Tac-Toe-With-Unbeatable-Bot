@@ -109,7 +109,7 @@ pub fn parse_player_input() -> Result<Coordinates, Box<dyn Error>> {
   if player_input.trim().len() == 1 {
     if let Ok(num) = player_input.trim().parse::<usize>() {
       if num != 0 {
-        return Ok(((num - 1) / 3, (num - 1) % 3));
+        return Ok(((num - 1) / GRID_SIZE, (num - 1) % GRID_SIZE));
       }
     }
   } else if player_input.trim().len() == 2 {
@@ -121,7 +121,7 @@ pub fn parse_player_input() -> Result<Coordinates, Box<dyn Error>> {
     };
 
     if let Ok(num) = player_input[1..2].trim().parse::<usize>() {
-      if num != 0 && num <= 3 {
+      if num != 0 && num <= GRID_SIZE {
         return Ok((coord_1, num - 1));
       }
     }
