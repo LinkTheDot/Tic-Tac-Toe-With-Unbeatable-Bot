@@ -157,7 +157,6 @@ impl CoordinateMethods for Coordinates {
       && board_config.get_board_position(adjacent_coords) != &BoardPositions::Center
       && board_config.get_board_position(adjacent_coords) != &BoardPositions::Edge
     {
-      println!(" running in between self == edge and != center ");
       let opposite_coords = adjacent_coords.get_opposite_coordinates(self);
 
       Some(board_config.get_board_state(&opposite_coords) == board_config.get_board_state(self))
