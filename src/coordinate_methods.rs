@@ -149,13 +149,9 @@ impl CoordinateMethods for Coordinates {
     adjacent_coords: &Coordinates,
     board_config: &BoardConfig,
   ) -> Option<bool> {
-    if board_config.get_board_position(self) == &BoardPositions::Center {
-      let opposite_coords = adjacent_coords.get_opposite_coordinates(self);
-
-      Some(board_config.get_board_state(&opposite_coords) == board_config.get_board_state(self))
-    } else if board_config.get_board_position(self) == &BoardPositions::Edge
-      && board_config.get_board_position(adjacent_coords) != &BoardPositions::Center
-      && board_config.get_board_position(adjacent_coords) != &BoardPositions::Edge
+    if board_config.get_board_position(self) == &BoardPositions::Center
+      || board_config.get_board_position(self) == &BoardPositions::Edge
+        && board_config.get_board_position(adjacent_coords) != &BoardPositions::Edge
     {
       let opposite_coords = adjacent_coords.get_opposite_coordinates(self);
 

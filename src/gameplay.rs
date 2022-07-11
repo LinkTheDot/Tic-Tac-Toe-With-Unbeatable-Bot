@@ -1,3 +1,4 @@
+use crate::bot::*;
 use crate::coordinate_methods::*;
 use crate::gameboard::*;
 use std::error::Error;
@@ -9,6 +10,7 @@ pub struct GameConfig {
   pub player_symbol: BoardStates,
   pub gameboard: BoardConfig,
   pub gamestate: GameState,
+  pub bot: Bot,
 }
 
 impl GameConfig {
@@ -16,6 +18,7 @@ impl GameConfig {
     let player_turn = rand::random::<bool>();
     let gameboard = BoardConfig::new();
     let gamestate = GameState::OnGoing;
+    let bot = Bot::new();
     let player_symbol = if player_turn {
       BoardStates::X
     } else {
@@ -27,6 +30,7 @@ impl GameConfig {
       player_symbol,
       gameboard,
       gamestate,
+      bot,
     }
   }
 
@@ -77,9 +81,8 @@ pub fn run_gameplay() -> Result<(), Box<dyn Error>> {
       if gameconfig.gameboard.get_board_state(&selected_tile) == &BoardStates::Empty {
         gameconfig
           .gameboard
-          .place_tile(selected_tile, gameconfig.player_symbol.clone()); // implement AsRef so you don't have to clone here
+          .place_tile(&selected_tile, gameconfig.player_symbol.clone()); // implement AsRef so you don't have to clone here
 
-        gameconfig.gameboard.last_modified_tile = selected_tile;
         gameconfig.gameboard.tiles_covered += 1;
         gameconfig.player_turn = false;
       }

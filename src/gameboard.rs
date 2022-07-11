@@ -143,7 +143,8 @@ impl BoardConfig {
     ]
   }
 
-  pub fn place_tile(&mut self, coords: Coordinates, changed_state: BoardStates) {
+  pub fn place_tile(&mut self, coords: &Coordinates, changed_state: BoardStates) {
+    self.last_modified_tile = *coords;
     self.tiles[coords.0][coords.1].board_state = changed_state;
   }
 
@@ -190,6 +191,15 @@ impl BoardConfig {
       BoardPositions::Edge => series_of_two_edge_check(self, check_from, nearby_coords),
       BoardPositions::Corner => series_of_two_corner_check(self, check_from, nearby_coords),
       _ => None,
+    }
+  }
+
+  pub fn get_random_empty_tile(&self) -> Option<Coordinates> {
+    let get_random_edge = rand::random::<bool>();
+    if get_random_edge {
+      self.get_random_empty_edge()
+    } else {
+      self.get_random_empty_corner()
     }
   }
 }

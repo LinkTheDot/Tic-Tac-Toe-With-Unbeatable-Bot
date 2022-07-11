@@ -1,6 +1,8 @@
 use crate::coordinate_methods::*;
 use crate::gameboard::*;
 
+const CENTER_TILE: Coordinates = (1, 1);
+
 #[derive(PartialEq, Debug)]
 pub struct Bot {
   pub path: CurrentPath,
@@ -113,7 +115,7 @@ impl Bot {
         self.path = self.check_if_center_or_not(gameboard);
 
         if self.path == CurrentPath::Center(BotCenterPaths::Unknown) {
-          self.chosen_placement = Ok((1, 1));
+          self.chosen_placement = Ok(CENTER_TILE);
           self.last_placed_tile = self.chosen_placement.clone();
         } else {
           self.chosen_placement = self.initial_check_of_player_center_paths(gameboard);
@@ -128,10 +130,10 @@ impl Bot {
   // this should only be called within the first 2 moves
   pub fn check_if_center_or_not(&self, gameboard: &BoardConfig) -> CurrentPath {
     if gameboard.tiles_covered == 0 // /
-      && gameboard.get_board_state(&(1, 1)) == &BoardStates::Empty
+      && gameboard.get_board_state(&CENTER_TILE) == &BoardStates::Empty
     {
       CurrentPath::Center(BotCenterPaths::Unknown)
-    } else if gameboard.get_board_state(&(1, 1)) == &BoardStates::Empty {
+    } else if gameboard.get_board_state(&CENTER_TILE) == &BoardStates::Empty {
       CurrentPath::NotCenter(PlayerCenterPaths::PlayerDidntPlaceCenter)
     } else {
       CurrentPath::NotCenter(PlayerCenterPaths::Unknown)
@@ -148,7 +150,7 @@ impl Bot {
         PlayerCenterPaths::PlayerDidntPlaceCenter => {
           self.path = CurrentPath::FocusDraw;
 
-          Ok((1, 1))
+          Ok(CENTER_TILE)
         }
         PlayerCenterPaths::Unknown => {
           self.path = CurrentPath::FocusDraw;
@@ -169,16 +171,17 @@ impl Bot {
     match &self.path {
       CurrentPath::NotCenter(PlayerCenterPaths::Unknown) => {
         if let Ok(bot_tile) = &self.last_placed_tile {
-          let opposite_corner_state =
-            gameboard.get_board_state(&bot_tile.get_opposite_coordinates(&(1, 1)));
+          let corner_state_opposite_bot_corner =
+            gameboard.get_board_state(&bot_tile.get_opposite_coordinates(&CENTER_TILE));
 
-          if opposite_corner_state != &BoardStates::Empty {
-            self.path = CurrentPath::FocusDraw;
+          self.path = CurrentPath::FocusDraw;
+
+          if corner_state_opposite_bot_corner != &BoardStates::Empty {
+            // probably remove this
             self.path = CurrentPath::NotCenter(PlayerCenterPaths::PlayerPlacedOppositeCorner);
 
             Ok(gameboard.get_random_empty_corner().unwrap())
           } else {
-            self.path = CurrentPath::FocusDraw;
             self.block_player_win(gameboard)
           }
         } else {
@@ -200,7 +203,7 @@ impl Bot {
           Ok(
             gameboard
               .last_modified_tile
-              .get_opposite_coordinates(&(1, 1)),
+              .get_opposite_coordinates(&CENTER_TILE),
           )
         } else {
           self.path = CurrentPath::FocusDraw;
@@ -224,7 +227,7 @@ impl Bot {
     if !edge_coords_around_bot_corner.is_empty() {
       self.path = CurrentPath::NotCenter(PlayerCenterPaths::PlayerPlacedEdgeNear);
 
-      Ok(edge_coords_around_bot_corner[0].get_opposite_coordinates(&(1, 1)))
+      Ok(edge_coords_around_bot_corner[0].get_opposite_coordinates(&CENTER_TILE))
     } else {
       self.path = CurrentPath::FocusDraw;
 
@@ -240,14 +243,16 @@ impl Bot {
     todo!()
   }
 
-  pub fn block_player_win(&self, _gameboard: &BoardConfig) -> Result<Coordinates, String> {
-    // take the last input from the player and see if there's a 2 in a row,
-    // if so place opposite from that
-    //
-    // also check if anything across from theirs is a match
-    todo!()
-    //match gameboard.get_board_state(&gameboard.last_modified_tile) {
-    //  _ => Err("".to_string()),
-    //}
+  pub fn block_player_win(&self, gameboard: &BoardConfig) -> Result<Coordinates, String> {
+    if let Some(coords) = gameboard.check_if_two_in_series(self.last_placed_tile.as_ref().unwrap())
+    {
+      Ok(coords)
+    } else if let Some(coords) = gameboard.check_if_two_in_series(&gameboard.last_modified_tile) {
+      Ok(coords)
+    } else if let Some(coords) = gameboard.get_random_empty_tile() {
+      Ok(coords)
+    } else {
+      Err("no possible tile to place on".to_string())
+    }
   }
 }
