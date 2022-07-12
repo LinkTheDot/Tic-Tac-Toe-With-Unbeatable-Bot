@@ -73,7 +73,7 @@ impl CoordinateMethods for Coordinates {
 
       match coordinates.1 {
         -1 => continue,
-        3 => continue,
+        _x if _x == ISIZE_GRID_SIZE => continue,
         _ => (),
       }
 
@@ -106,13 +106,13 @@ impl CoordinateMethods for Coordinates {
     for coordinates in possible_coordinates {
       match coordinates.0 {
         -1 => continue,
-        3 => continue,
+        _x if _x == ISIZE_GRID_SIZE => continue,
         _ => (),
       }
 
       match coordinates.1 {
         -1 => continue,
-        3 => continue,
+        _x if _x == ISIZE_GRID_SIZE => continue,
         _ => (),
       }
 
@@ -151,7 +151,7 @@ impl CoordinateMethods for Coordinates {
   ) -> Option<bool> {
     if board_config.get_board_position(self) == &BoardPositions::Center
       || board_config.get_board_position(self) == &BoardPositions::Edge
-        && board_config.get_board_position(adjacent_coords) != &BoardPositions::Edge
+        && board_config.get_board_position(adjacent_coords) == &BoardPositions::Corner
     {
       let opposite_coords = adjacent_coords.get_opposite_coordinates(self);
 
@@ -179,7 +179,7 @@ impl CoordinateMethods for Coordinates {
 
   /// if you pass in an edge it'll return corners
   /// if you pass in a corner it'll return edges
-  /// if you end up passing in the center then you'll get all edge i guess
+  /// if you end up passing in the center then you'll get all edges
   fn get_coords_around_excluding_center(&self) -> Vec<Coordinates> {
     let isize_coordinates: [isize; 2] = [self.0.try_into().unwrap(), self.1.try_into().unwrap()];
 
@@ -191,7 +191,7 @@ impl CoordinateMethods for Coordinates {
     ]
     .into_iter()
     .filter(|coords| {
-      !coords.0 == -1 || coords.0 == 3 || coords.1 == -1 || coords.1 == 3 || coords == &(1, 1)
+      coords.0 != -1 && coords.0 != 3 && coords.1 != -1 && coords.1 != 3 && coords != &(1, 1)
     })
     .map(|coords| (coords.0.try_into().unwrap(), coords.1.try_into().unwrap()))
     .collect::<Vec<Coordinates>>()

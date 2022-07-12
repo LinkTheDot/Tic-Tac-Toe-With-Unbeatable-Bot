@@ -179,4 +179,22 @@ mod is_matching_in_a_row_logic {
 
     assert_eq!(matching_result, EXPECTED_NO_WIN);
   }
+
+  #[test]
+  fn checking_from_center_possible_overflow() {
+    let mut gameboard = BoardConfig::new();
+    let check_from = (1, 1);
+    let check_over = (2, 1);
+
+    //-|O|-
+    //-|X|-
+    //-|X|-
+    gameboard.place_tile(&(0, 1), BoardStates::O);
+    gameboard.place_tile(&(1, 1), BoardStates::X);
+    gameboard.place_tile(&(2, 1), BoardStates::X);
+
+    let matching_result = check_from.is_matching_in_a_row(&check_over, &gameboard);
+
+    assert_eq!(matching_result, EXPECTED_NO_WIN);
+  }
 }

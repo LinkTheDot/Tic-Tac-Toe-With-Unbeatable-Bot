@@ -86,7 +86,6 @@ mod not_center_logic {
     }
 
     #[test]
-    #[ignore]
     fn player_placed_edge_near() {
       let mut bot = Bot::new();
       let mut gameboard = BoardConfig::new();
@@ -109,14 +108,10 @@ mod not_center_logic {
 
       gameboard.place_tile(bot.chosen_placement.as_ref().unwrap(), BoardStates::X);
 
-      println!(" -- BOT --\n\n{:#?}", &bot);
-      println!("\n\n\n\n\n");
-      println!(" -- GAMEBOARD --\n\n{:#?}", &gameboard);
-
       //-|X|-
       //-|O|-
       //O|O|X
-      gameboard.place_tile(&(2, 0), BoardStates::X);
+      gameboard.place_tile(&(2, 0), BoardStates::O);
 
       bot.chosen_placement = bot.not_center_corner_checks(&gameboard);
 
@@ -155,9 +150,9 @@ mod block_player_win_logic {
     //X|-|-
     //X|O|-
     //-|-|-
-    gameconfig.gameboard.place_tile(&(0, 0), BoardStates::X);
     gameconfig.gameboard.place_tile(&(1, 0), BoardStates::X);
     gameconfig.gameboard.place_tile(&(1, 1), BoardStates::O);
+    gameconfig.gameboard.place_tile(&(0, 0), BoardStates::X);
 
     gameconfig.bot.last_placed_tile = Ok((1, 1));
 

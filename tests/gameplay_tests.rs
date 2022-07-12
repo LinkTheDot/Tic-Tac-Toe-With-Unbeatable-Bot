@@ -67,22 +67,4 @@ mod check_if_win_logic {
 
     assert_eq!(game_config.check_if_win(), expected_outcome);
   }
-
-  #[test]
-  fn only_same_symbols_match() {
-    let mut game_config = GameConfig::new();
-    let checking_from = (1, 1);
-    let expected_outcome = false;
-
-    game_config.gameboard.last_modified_tile = checking_from;
-
-    //-|O|-
-    //-|X|-
-    //-|X|-
-    game_config.gameboard.place_tile(&(0, 1), BoardStates::O);
-    game_config.gameboard.place_tile(&(1, 1), BoardStates::X);
-    game_config.gameboard.place_tile(&(2, 1), BoardStates::X);
-
-    assert_eq!(game_config.check_if_win(), expected_outcome);
-  }
 }

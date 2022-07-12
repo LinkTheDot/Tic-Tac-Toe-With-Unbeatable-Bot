@@ -177,7 +177,7 @@ impl Bot {
           self.path = CurrentPath::FocusDraw;
 
           if corner_state_opposite_bot_corner != &BoardStates::Empty {
-            // probably remove this
+            // probably remove this path and path change
             self.path = CurrentPath::NotCenter(PlayerCenterPaths::PlayerPlacedOppositeCorner);
 
             Ok(gameboard.get_random_empty_corner().unwrap())
@@ -210,7 +210,7 @@ impl Bot {
           self.block_player_win(gameboard)
         }
       }
-      _ => Err("Unknown board position".to_string()),
+      _ => Err("Unknown bot path".to_string()),
     }
   }
 

@@ -4,6 +4,8 @@ use crate::gameboard::*;
 use std::error::Error;
 use std::io;
 
+const DEBUG_COORDS: Coordinates = (10, 10);
+
 #[derive(PartialEq, Debug)]
 pub struct GameConfig {
   pub player_turn: bool,
@@ -18,10 +20,12 @@ impl GameConfig {
     let player_turn = rand::random::<bool>();
     let gameboard = BoardConfig::new();
     let gamestate = GameState::OnGoing;
-    let bot = Bot::new();
+    let mut bot = Bot::new();
     let player_symbol = if player_turn {
+      bot.bot_symbol = BoardStates::O;
       BoardStates::X
     } else {
+      bot.bot_symbol = BoardStates::X;
       BoardStates::O
     };
 
@@ -72,6 +76,10 @@ pub fn run_gameplay() -> Result<(), Box<dyn Error>> {
 
     if gameconfig.player_turn {
       let selected_tile = match parse_player_input() {
+        Ok(DEBUG_COORDS) => {
+          free_play(&mut gameconfig);
+          return Ok(());
+        }
         Ok(x) => x,
         Err(_) => continue,
       };
@@ -110,6 +118,10 @@ pub fn parse_player_input() -> Result<Coordinates, Box<dyn Error>> {
   let mut player_input = String::new();
   io::stdin().read_line(&mut player_input).unwrap();
 
+  if player_input.trim().to_lowercase() == "debug" {
+    return Ok(DEBUG_COORDS);
+  }
+
   if player_input.trim().len() == 1 {
     if let Ok(num) = player_input.trim().parse::<usize>() {
       if num != 0 {
@@ -132,4 +144,37 @@ pub fn parse_player_input() -> Result<Coordinates, Box<dyn Error>> {
   }
 
   Err(Box::from("incorrect input"))
+}
+
+pub fn free_play(gameconfig: &mut GameConfig) {
+  while gameconfig.gameboard.tiles_covered < 9 {
+    gameconfig.gameboard.print_board();
+
+    let place_symbol = if gameconfig.player_turn {
+      &gameconfig.player_symbol
+    } else {
+      &gameconfig.bot.bot_symbol
+    };
+
+    let selected_tile = match parse_player_input() {
+      Ok(x) => x,
+      Err(_) => continue,
+    };
+
+    gameconfig
+      .gameboard
+      .place_tile(&selected_tile, place_symbol.clone());
+
+    if gameconfig.check_if_win() {
+      gameconfig.gameboard.print_board();
+
+      break;
+    }
+
+    if gameconfig.player_turn {
+      gameconfig.player_turn = false
+    } else {
+      gameconfig.player_turn = true
+    }
+  }
 }
