@@ -157,7 +157,13 @@ pub fn free_play(gameconfig: &mut GameConfig) {
     };
 
     let selected_tile = match parse_player_input() {
-      Ok(x) => x,
+      Ok(coords) => {
+        if gameconfig.gameboard.get_board_state(&coords) == &BoardStates::Empty {
+          coords
+        } else {
+          continue;
+        }
+      }
       Err(_) => continue,
     };
 
