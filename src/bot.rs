@@ -3,6 +3,13 @@ use crate::gameboard::*;
 
 const CENTER_TILE: Coordinates = (1, 1);
 
+// -- bugs --
+//
+// when player doesn't block the bot's forced corner placement under path
+// CurrentPath::Center(BotCenterPaths::PlayerPlacedEdge)
+// the bot doesn't take that and proceeds to follow through with a, funnily enough
+// triple win condition
+
 #[derive(PartialEq, Debug)]
 pub struct Bot {
   pub path: CurrentPath,
@@ -71,9 +78,7 @@ impl Bot {
   //
   // first 2 moves, check the center and update status
 
-  pub fn bot_actions(&mut self, gameboard: &BoardConfig) -> Result<&Coordinates, &String> {
-    self.most_recent_chosen_coords = Err("no input initiated".to_string());
-
+  pub fn choose_coordinates(&mut self, gameboard: &BoardConfig) {
     match &self.path {
       CurrentPath::Center(_) => {
         //
@@ -114,8 +119,6 @@ impl Bot {
         }
       }
     }
-
-    self.most_recent_chosen_coords.as_ref()
   }
 
   // this should only be called within the first 2 moves

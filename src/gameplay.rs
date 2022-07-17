@@ -84,8 +84,6 @@ pub fn run_gameplay() -> Result<(), Box<dyn Error>> {
         Err(_) => continue,
       };
 
-      println!("selected tile = {:?}", selected_tile);
-
       if gameconfig.gameboard.get_board_state(&selected_tile) == &BoardStates::Empty {
         gameconfig
           .gameboard
@@ -94,20 +92,27 @@ pub fn run_gameplay() -> Result<(), Box<dyn Error>> {
         gameconfig.gameboard.tiles_covered += 1;
         gameconfig.player_turn = false;
       }
-
-      if gameconfig.check_if_win() {
-        gameconfig.gamestate = gameconfig.player_symbol_to_game_state();
-        break;
-      }
     } else {
-      // insert bot code
+      gameconfig.bot.choose_coordinates(&gameconfig.gameboard);
 
-      //temp stuff until i do add it
-      println!(" -- bot turn over -- ");
+      gameconfig.gameboard.place_tile(
+        gameconfig.bot.most_recent_chosen_coords.as_ref().unwrap(),
+        gameconfig.bot.bot_symbol.clone(),
+      );
+
+      println!(" -- bot turn over --\n");
+
+      gameconfig.gameboard.tiles_covered += 1;
       gameconfig.player_turn = true;
-      continue;
+    }
+
+    if gameconfig.check_if_win() {
+      gameconfig.gamestate = gameconfig.player_symbol_to_game_state();
+      break;
     }
   }
+
+  gameconfig.gameboard.print_board();
 
   Ok(())
 }

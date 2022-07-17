@@ -373,35 +373,54 @@ mod auto_play_logic {
 }
 
 #[cfg(test)]
-mod bot_actions_logic {
+mod choose_coordinates_logic {
   #![allow(unused)]
   use super::*;
 
-  #[test]
-  #[ignore] // ignore until completed
-  fn first_two_moves_logic_works() {}
+  #[cfg(test)]
+  mod first_two_moves {
+    use super::*;
 
-  #[test]
-  #[ignore] // ignore until completed
-  fn center_corner_path_works() {}
+    #[test]
+    fn bot_is_first() {
+      let mut bot = Bot::new();
+      let mut gameboard = BoardConfig::new();
+      let expected_chosen_placement = Ok((1, 1));
 
-  #[test]
-  #[ignore] // ignore until completed
-  fn center_edge_path_works() {}
+      bot.choose_coordinates(&gameboard);
 
-  #[test]
-  #[ignore] // ignore until completed
-  fn not_center_corner_path_works() {}
+      assert_eq!(expected_chosen_placement, bot.most_recent_chosen_coords);
+    }
 
-  #[test]
-  #[ignore] // ignore until completed
-  fn not_center_edge_path_works() {}
+    #[test]
+    fn bot_is_second() {
+      let mut bot = Bot::new();
+      let mut gameboard = BoardConfig::new();
+      let player_placement = (1, 1);
+      let expected_board_position = BoardPositions::Corner;
 
-  #[test]
-  #[ignore] // ignore until completed
-  fn focus_draw_works() {}
+      gameboard.place_tile(&player_placement, PLAYER_BOARD_SYMBOL);
 
-  #[test]
-  #[ignore] // ignore until completed
-  fn double_win_condition_works() {}
+      bot.choose_coordinates(&gameboard);
+
+      let bot_chosen_position =
+        gameboard.get_board_position(bot.most_recent_chosen_coords.as_ref().unwrap());
+
+      assert_eq!(bot_chosen_position, &expected_board_position);
+    }
+
+    #[test]
+    fn bot_is_second_center_is_open() {
+      let mut bot = Bot::new();
+      let mut gameboard = BoardConfig::new();
+      let player_placement = (0, 0);
+      let expected_chosen_placement = Ok((1, 1));
+
+      gameboard.place_tile(&player_placement, PLAYER_BOARD_SYMBOL);
+
+      bot.choose_coordinates(&gameboard);
+
+      assert_eq!(expected_chosen_placement, bot.most_recent_chosen_coords);
+    }
+  }
 }
