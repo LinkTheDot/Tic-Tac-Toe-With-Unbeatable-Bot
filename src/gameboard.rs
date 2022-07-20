@@ -1,6 +1,6 @@
 use crate::coordinate_methods::*;
 use rand::prelude::*;
-use std::fmt::{Formatter, Result};
+use std::fmt::{Display, Formatter, Result};
 
 const VISUALIZED_X: &str = "X";
 const VISUALIZED_O: &str = "O";
@@ -38,19 +38,19 @@ impl BoardConfig {
   pub fn new() -> Self {
     let tiles = [
       [
-        BoardTile::from(BoardPositions::Corner),
-        BoardTile::from(BoardPositions::Edge),
-        BoardTile::from(BoardPositions::Corner),
+        BoardTile::new(BoardPositions::Corner),
+        BoardTile::new(BoardPositions::Edge),
+        BoardTile::new(BoardPositions::Corner),
       ],
       [
-        BoardTile::from(BoardPositions::Edge),
-        BoardTile::from(BoardPositions::Center),
-        BoardTile::from(BoardPositions::Edge),
+        BoardTile::new(BoardPositions::Edge),
+        BoardTile::new(BoardPositions::Center),
+        BoardTile::new(BoardPositions::Edge),
       ],
       [
-        BoardTile::from(BoardPositions::Corner),
-        BoardTile::from(BoardPositions::Edge),
-        BoardTile::from(BoardPositions::Corner),
+        BoardTile::new(BoardPositions::Corner),
+        BoardTile::new(BoardPositions::Edge),
+        BoardTile::new(BoardPositions::Corner),
       ],
     ];
 
@@ -79,7 +79,7 @@ impl BoardConfig {
 
   /// this will return all coordinates around an input that are of the same boardstate
   pub fn matching_adjacent_tiles(&self, coords: &Coordinates) -> Vec<Coordinates> {
-    let adjacent_tiles = get_valid_coordinates_around(coords);
+    let adjacent_tiles = coords.get_coords_around();
     let matching_symbol: &BoardStates = {
       let symbol = &self.get_board_state(coords);
 
@@ -97,16 +97,6 @@ impl BoardConfig {
       .collect::<Vec<Coordinates>>()
   }
 
-  // remove coordinates and replace with self.last_modified_tile if bot doesn't use
-  pub fn coordinates_connected_to_three_in_a_row(&self, coordinates: &Coordinates) -> bool {
-    self
-      .matching_adjacent_tiles(coordinates)
-      .iter()
-      .filter(|coords| coordinates.is_matching_in_a_row(coords, self))
-      .count()
-      != 0
-  }
-
   pub fn get_board_position(&self, coords: &Coordinates) -> &BoardPositions {
     &self.tiles[coords.0][coords.1].board_position
   }
@@ -115,37 +105,9 @@ impl BoardConfig {
     &self.tiles[coords.0][coords.1].board_state
   }
 
-  pub fn check_corner_states(&self) -> [(Coordinates, &BoardStates); 4] {
-    let top_left = (0, 0);
-    let top_right = (0, 2);
-    let bottom_left = (2, 0);
-    let bottom_right = (2, 2);
-
-    [
-      (top_left, self.get_board_state(&top_left)),
-      (top_right, self.get_board_state(&top_right)),
-      (bottom_left, self.get_board_state(&bottom_left)),
-      (bottom_right, self.get_board_state(&bottom_right)),
-    ]
-  }
-
-  pub fn check_edge_states(&self) -> [(Coordinates, &BoardStates); 4] {
-    let top = (0, 1);
-    let left = (1, 0);
-    let right = (1, 2);
-    let bottom = (2, 1);
-
-    [
-      (top, self.get_board_state(&top)),
-      (left, self.get_board_state(&left)),
-      (right, self.get_board_state(&right)),
-      (bottom, self.get_board_state(&bottom)),
-    ]
-  }
-
-  pub fn place_tile(&mut self, coords: &Coordinates, changed_state: BoardStates) {
+  pub fn place_tile(&mut self, coords: &Coordinates, changed_state: &BoardStates) {
     self.last_modified_tile = *coords;
-    self.tiles[coords.0][coords.1].board_state = changed_state;
+    self.tiles[coords.0][coords.1].board_state = changed_state.clone();
   }
 
   pub fn get_random_empty_corner(&self) -> Option<Coordinates> {
@@ -178,6 +140,15 @@ impl BoardConfig {
     }
   }
 
+  pub fn get_random_empty_tile(&self) -> Option<Coordinates> {
+    let get_random_edge = rand::random::<bool>();
+    if get_random_edge {
+      self.get_random_empty_edge()
+    } else {
+      self.get_random_empty_corner()
+    }
+  }
+
   /// If there is a series of 2, this will return the empty one in the series.
   /// Otherwise it'll return None.
   pub fn check_if_two_in_series(&self, check_from: &Coordinates) -> Option<Coordinates> {
@@ -193,19 +164,10 @@ impl BoardConfig {
       _ => None,
     }
   }
-
-  pub fn get_random_empty_tile(&self) -> Option<Coordinates> {
-    let get_random_edge = rand::random::<bool>();
-    if get_random_edge {
-      self.get_random_empty_edge()
-    } else {
-      self.get_random_empty_corner()
-    }
-  }
 }
 
 impl BoardTile {
-  pub fn from(board_position: BoardPositions) -> Self {
+  pub fn new(board_position: BoardPositions) -> Self {
     BoardTile {
       board_state: BoardStates::Empty,
       board_position,
@@ -213,7 +175,7 @@ impl BoardTile {
   }
 }
 
-impl std::fmt::Display for BoardTile {
+impl Display for BoardTile {
   fn fmt(&self, f: &mut Formatter<'_>) -> Result {
     let output = match self.board_state {
       BoardStates::X => VISUALIZED_X,
@@ -223,48 +185,6 @@ impl std::fmt::Display for BoardTile {
 
     write!(f, "{}", output)
   }
-}
-
-pub fn get_valid_coordinates_around(coordinates: &Coordinates) -> Vec<Coordinates> {
-  let mut valid_coordinates: Vec<Coordinates> = Vec::new();
-  let isize_coordinates = [
-    coordinates.0.try_into().unwrap(),
-    coordinates.1.try_into().unwrap(),
-  ];
-
-  let possible_coordinates: Vec<(isize, isize)> = vec![
-    (isize_coordinates[0], isize_coordinates[1] - 1),
-    (isize_coordinates[0], isize_coordinates[1] + 1),
-    (isize_coordinates[0] - 1, isize_coordinates[1]),
-    (isize_coordinates[0] + 1, isize_coordinates[1]),
-    (isize_coordinates[0] - 1, isize_coordinates[1] + 1),
-    (isize_coordinates[0] + 1, isize_coordinates[1] - 1),
-    (isize_coordinates[0] - 1, isize_coordinates[1] - 1),
-    (isize_coordinates[0] + 1, isize_coordinates[1] + 1),
-  ];
-
-  for coordinates in possible_coordinates {
-    match coordinates.0 {
-      -1 => continue,
-      _x if _x == ISIZE_GRID_SIZE => continue,
-      _ => (),
-    }
-
-    match coordinates.1 {
-      -1 => continue,
-      _x if _x == ISIZE_GRID_SIZE => continue,
-      _ => (),
-    }
-
-    let swapped_to_usize: Coordinates = (
-      coordinates.0.try_into().unwrap(),
-      coordinates.1.try_into().unwrap(),
-    );
-
-    valid_coordinates.push(swapped_to_usize);
-  }
-
-  valid_coordinates
 }
 
 pub fn series_of_two_edge_check(

@@ -52,42 +52,23 @@ impl CoordinateMethods for Coordinates {
   }
 
   fn is_diagonal_from(&self, origin_coords: &Coordinates) -> bool {
-    let isize_origin_coords: [isize; 2] = [
+    let isize_coords: [isize; 2] = [
       origin_coords.0.try_into().unwrap(),
       origin_coords.1.try_into().unwrap(),
     ];
 
-    let possible_coordinates: Vec<(isize, isize)> = vec![
-      (isize_origin_coords[0] + 1, isize_origin_coords[1] + 1),
-      (isize_origin_coords[0] - 1, isize_origin_coords[1] + 1),
-      (isize_origin_coords[0] + 1, isize_origin_coords[1] - 1),
-      (isize_origin_coords[0] - 1, isize_origin_coords[1] - 1),
-    ];
+    let isize_comparison: (isize, isize) = (self.0.try_into().unwrap(), self.1.try_into().unwrap());
 
-    for coordinates in possible_coordinates {
-      match coordinates.0 {
-        -1 => continue,
-        _x if _x == ISIZE_GRID_SIZE => continue,
-        _ => (),
-      }
-
-      match coordinates.1 {
-        -1 => continue,
-        _x if _x == ISIZE_GRID_SIZE => continue,
-        _ => (),
-      }
-
-      let usize_coordinates = (
-        coordinates.0.try_into().unwrap(),
-        coordinates.1.try_into().unwrap(),
-      );
-
-      if &usize_coordinates == self {
-        return true;
-      };
-    }
-
-    false
+    [
+      (isize_coords[0] + 1, isize_coords[1] + 1),
+      (isize_coords[0] - 1, isize_coords[1] + 1),
+      (isize_coords[0] + 1, isize_coords[1] - 1),
+      (isize_coords[0] - 1, isize_coords[1] - 1),
+    ]
+    .into_iter()
+    .filter(|coords| coords == &isize_comparison)
+    .count()
+      != 0
   }
 
   fn is_across_from(&self, origin_coords: &Coordinates) -> bool {
@@ -96,40 +77,20 @@ impl CoordinateMethods for Coordinates {
       origin_coords.1.try_into().unwrap(),
     ];
 
-    let possible_coordinates: Vec<(isize, isize)> = vec![
+    let isize_comparison: (isize, isize) = (self.0.try_into().unwrap(), self.1.try_into().unwrap());
+
+    [
       (isize_coordinates[0] + 1, isize_coordinates[1]),
       (isize_coordinates[0] - 1, isize_coordinates[1]),
       (isize_coordinates[0], isize_coordinates[1] + 1),
       (isize_coordinates[0], isize_coordinates[1] - 1),
-    ];
-
-    for coordinates in possible_coordinates {
-      match coordinates.0 {
-        -1 => continue,
-        _x if _x == ISIZE_GRID_SIZE => continue,
-        _ => (),
-      }
-
-      match coordinates.1 {
-        -1 => continue,
-        _x if _x == ISIZE_GRID_SIZE => continue,
-        _ => (),
-      }
-
-      let usize_coordinates = (
-        coordinates.0.try_into().unwrap(),
-        coordinates.1.try_into().unwrap(),
-      );
-
-      if &usize_coordinates == self {
-        return true;
-      };
-    }
-
-    false
+    ]
+    .into_iter()
+    .filter(|coords| coords == &isize_comparison)
+    .count()
+      != 0
   }
 
-  // merge with coordinates_connected_to_three_in_a_row if bot doesn't use
   fn is_matching_in_a_row(
     &self,
     adjacent_coords: &Coordinates,

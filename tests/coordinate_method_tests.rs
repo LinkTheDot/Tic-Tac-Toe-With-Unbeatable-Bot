@@ -53,14 +53,16 @@ mod is_across_and_diagonal_logic {
   #[test]
   fn is_accross_works() {
     let origin = (0, 0);
-    let horizontal = (0, 1);
-    let bad_input = (3, 3);
+    let horizontal_input = (0, 1);
+    let diagonal_input = (1, 1);
+    let expected_horizontal_result = true;
+    let expected_diagonal_result = false;
 
-    let not_horizontal_from = bad_input.is_across_from(&origin);
-    let horizontal_from = horizontal.is_across_from(&origin);
+    let not_horizontal_from = diagonal_input.is_across_from(&origin);
+    let horizontal_from = horizontal_input.is_across_from(&origin);
 
-    assert_eq!(horizontal_from, true);
-    assert_eq!(not_horizontal_from, false);
+    assert_eq!(horizontal_from, expected_horizontal_result);
+    assert_eq!(not_horizontal_from, expected_diagonal_result);
   }
 
   #[test]
@@ -118,9 +120,9 @@ mod is_matching_in_a_row_logic {
     // X|-|-
     // O|-|-
     // O|-|-
-    gameboard.place_tile(&(0, 0), BoardStates::X);
-    gameboard.place_tile(&(1, 0), BoardStates::O);
-    gameboard.place_tile(&(2, 0), BoardStates::O);
+    gameboard.place_tile(&(0, 0), &BoardStates::X);
+    gameboard.place_tile(&(1, 0), &BoardStates::O);
+    gameboard.place_tile(&(2, 0), &BoardStates::O);
 
     let matching_result = check_from.is_matching_in_a_row(&check_over, &gameboard);
 
@@ -136,9 +138,9 @@ mod is_matching_in_a_row_logic {
     // X|-|-
     // X|-|-
     // X|-|-
-    gameboard.place_tile(&(0, 0), BoardStates::X);
-    gameboard.place_tile(&(1, 0), BoardStates::X);
-    gameboard.place_tile(&(2, 0), BoardStates::X);
+    gameboard.place_tile(&(0, 0), &BoardStates::X);
+    gameboard.place_tile(&(1, 0), &BoardStates::X);
+    gameboard.place_tile(&(2, 0), &BoardStates::X);
 
     let matching_result = check_from.is_matching_in_a_row(&check_over, &gameboard);
 
@@ -154,9 +156,9 @@ mod is_matching_in_a_row_logic {
     // X|-|-
     // X|-|-
     // X|-|-
-    gameboard.place_tile(&(0, 0), BoardStates::X);
-    gameboard.place_tile(&(1, 0), BoardStates::X);
-    gameboard.place_tile(&(2, 0), BoardStates::X);
+    gameboard.place_tile(&(0, 0), &BoardStates::X);
+    gameboard.place_tile(&(1, 0), &BoardStates::X);
+    gameboard.place_tile(&(2, 0), &BoardStates::X);
 
     let matching_result = check_from.is_matching_in_a_row(&check_over, &gameboard);
 
@@ -172,8 +174,8 @@ mod is_matching_in_a_row_logic {
     // -|X|-
     // X|-|-
     // -|-|-
-    gameboard.place_tile(&(1, 0), BoardStates::X);
-    gameboard.place_tile(&(0, 1), BoardStates::X);
+    gameboard.place_tile(&(1, 0), &BoardStates::X);
+    gameboard.place_tile(&(0, 1), &BoardStates::X);
 
     let matching_result = check_from.is_matching_in_a_row(&check_over, &gameboard);
 
@@ -189,9 +191,9 @@ mod is_matching_in_a_row_logic {
     //-|O|-
     //-|X|-
     //-|X|-
-    gameboard.place_tile(&(0, 1), BoardStates::O);
-    gameboard.place_tile(&(1, 1), BoardStates::X);
-    gameboard.place_tile(&(2, 1), BoardStates::X);
+    gameboard.place_tile(&(0, 1), &BoardStates::O);
+    gameboard.place_tile(&(1, 1), &BoardStates::X);
+    gameboard.place_tile(&(2, 1), &BoardStates::X);
 
     let matching_result = check_from.is_matching_in_a_row(&check_over, &gameboard);
 
