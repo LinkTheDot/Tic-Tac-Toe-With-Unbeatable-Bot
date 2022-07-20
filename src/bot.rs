@@ -240,7 +240,7 @@ impl Bot {
       Ok(coords)
     } else if let Some(coords) = gameboard.check_if_two_in_series(&gameboard.last_modified_tile) {
       Ok(coords)
-    } else if let Some(coords) = gameboard.get_random_empty_tile() {
+    } else if let Some(coords) = gameboard.get_random_empty_corner_then_edge() {
       Ok(coords)
     } else {
       Err("No possible tile to place on".to_string())

@@ -424,3 +424,73 @@ mod choose_coordinates_logic {
     }
   }
 }
+
+#[cfg(test)]
+mod known_bugs {
+  use super::*;
+  use tictactoe_with_ai::coordinate_methods::*;
+  use tictactoe_with_ai::gameplay::GameConfig;
+
+  #[test]
+  fn bot_possible_lose() {
+    let first_move = (1, 1);
+    let mut bot_edge_placement_count = 0;
+    let expected_bot_edge_placements = 0;
+
+    // == overall goal ==
+    //
+    //       -|-|O
+    //       X|O|-
+    //       X|-|-
+    //
+
+    for _x in 0..50 {
+      let mut gameconfig = GameConfig::new();
+
+      gameconfig.player_symbol = PLAYER_BOARD_SYMBOL;
+      gameconfig.bot.bot_symbol = BOT_BOARD_SYMBOL;
+
+      // -|-|-
+      // -|O|-
+      // -|-|-
+      gameconfig
+        .gameboard
+        .place_tile(&first_move, &PLAYER_BOARD_SYMBOL);
+
+      // Some corner, it's random
+      // -|-|-
+      // -|O|-
+      // X|-|-
+      gameconfig.bot.choose_coordinates(&gameconfig.gameboard);
+      gameconfig.gameboard.place_tile(
+        &gameconfig.bot.most_recent_chosen_coords.as_ref().unwrap(),
+        &BOT_BOARD_SYMBOL,
+      );
+
+      // Opposite of the bot's corner
+      // -|-|O
+      // -|O|-
+      // X|-|-
+      let second_move = gameconfig
+        .gameboard
+        .last_modified_tile
+        .get_opposite_coordinates(&first_move);
+
+      gameconfig
+        .gameboard
+        .place_tile(&second_move, &PLAYER_BOARD_SYMBOL);
+
+      gameconfig.bot.choose_coordinates(&gameconfig.gameboard);
+
+      let position_of_bot_placement = gameconfig
+        .gameboard
+        .get_board_position(gameconfig.bot.most_recent_chosen_coords.as_ref().unwrap());
+
+      if *position_of_bot_placement == BoardPositions::Edge {
+        bot_edge_placement_count += 1;
+      }
+    }
+
+    assert_eq!(bot_edge_placement_count, expected_bot_edge_placements);
+  }
+}

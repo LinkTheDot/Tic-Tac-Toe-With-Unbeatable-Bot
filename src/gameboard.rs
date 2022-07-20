@@ -140,12 +140,11 @@ impl BoardConfig {
     }
   }
 
-  pub fn get_random_empty_tile(&self) -> Option<Coordinates> {
-    let get_random_edge = rand::random::<bool>();
-    if get_random_edge {
-      self.get_random_empty_edge()
+  pub fn get_random_empty_corner_then_edge(&self) -> Option<Coordinates> {
+    if let Some(coords) = self.get_random_empty_corner() {
+      Some(coords)
     } else {
-      self.get_random_empty_corner()
+      self.get_random_empty_edge().map(|coords| coords)
     }
   }
 
