@@ -79,34 +79,14 @@ impl Bot {
   pub fn choose_coordinates(&mut self, gameboard: &BoardConfig) {
     match &self.path {
       CurrentPath::Center(_) => {
-        //
-        match gameboard.get_board_position(&gameboard.last_modified_tile) {
-          BoardPositions::Corner => {
-            self.most_recent_chosen_coords = self.center_corner_checks(gameboard);
-          }
-          BoardPositions::Edge => {
-            self.most_recent_chosen_coords = self.center_edge_checks(gameboard);
-          }
-          _ => self.most_recent_chosen_coords = Err("Unknown board position".to_string()),
-        }
+        center_position_checks(self, gameboard);
       }
-
       CurrentPath::NotCenter(_) => {
-        match gameboard.get_board_position(&gameboard.last_modified_tile) {
-          BoardPositions::Corner => {
-            self.most_recent_chosen_coords = self.not_center_corner_checks(gameboard);
-          }
-          BoardPositions::Edge => {
-            self.most_recent_chosen_coords = self.not_center_edge_checks(gameboard);
-          }
-          _ => self.most_recent_chosen_coords = Err("Unknown board position".to_string()),
-        }
+        not_center_position_checks(self, gameboard);
       }
-
       CurrentPath::FocusDraw | CurrentPath::DoubleWinCondition => {
         self.most_recent_chosen_coords = self.auto_play(gameboard);
       }
-
       CurrentPath::Unknown => {
         self.path = self.check_if_center_or_not(gameboard);
 
@@ -234,7 +214,6 @@ impl Bot {
     }
   }
 
-  // === maybe split up the paths into their own functions ===
   pub fn center_edge_checks(&mut self, gameboard: &BoardConfig) -> Result<Coordinates, String> {
     match &self.path {
       CurrentPath::Center(BotCenterPaths::Unknown) => {
@@ -247,25 +226,7 @@ impl Bot {
         Ok(corners_near_player_edge[rand::thread_rng().gen_range(0..1)])
       }
       CurrentPath::Center(BotCenterPaths::PlayerPlacedCorner) => {
-        self.path = CurrentPath::DoubleWinCondition;
-
-        let coords_around_player_edge = gameboard
-          .last_modified_tile
-          .get_coords_around_excluding_center();
-
-        if coords_around_player_edge.iter().find_map(|coords| {
-          if gameboard.get_board_state(coords) != &BoardStates::Empty {
-            Some(gameboard.get_board_state(coords))
-          } else {
-            None
-          }
-        }) != Some(&self.bot_symbol)
-        {
-          // this is when edge is far from bot corner
-          self.auto_play(gameboard)
-        } else {
-          center_edge_check_placed_edge_near(self, gameboard)
-        }
+        center_edge_check_placed_corner_then_edge(self, gameboard)
       }
       CurrentPath::Center(BotCenterPaths::PlayerPlacedEdge) => self.auto_play(gameboard),
       _ => Err("Unknown Center Path".to_string()),
@@ -339,6 +300,31 @@ fn center_edge_check_placed_edge_near(
     .ok_or_else(|| "No open edge around bot corner".to_string())
 }
 
+fn center_edge_check_placed_corner_then_edge(
+  bot: &mut Bot,
+  gameboard: &BoardConfig,
+) -> Result<Coordinates, String> {
+  bot.path = CurrentPath::DoubleWinCondition;
+
+  let coords_around_player_edge = gameboard
+    .last_modified_tile
+    .get_coords_around_excluding_center();
+
+  if coords_around_player_edge.iter().find_map(|coords| {
+    if gameboard.get_board_state(coords) != &BoardStates::Empty {
+      Some(gameboard.get_board_state(coords))
+    } else {
+      None
+    }
+  }) != Some(&bot.bot_symbol)
+  {
+    // this is when edge is far from bot corner
+    bot.auto_play(gameboard)
+  } else {
+    center_edge_check_placed_edge_near(bot, gameboard)
+  }
+}
+
 fn not_center_corner_check_placed_edge_near(
   bot: &mut Bot,
   gameboard: &BoardConfig,
@@ -363,5 +349,29 @@ fn not_center_corner_check_placed_edge_near(
   } else {
     bot.path = CurrentPath::FocusDraw;
     bot.auto_play(gameboard)
+  }
+}
+
+fn center_position_checks(bot: &mut Bot, gameboard: &BoardConfig) {
+  match gameboard.get_board_position(&gameboard.last_modified_tile) {
+    BoardPositions::Corner => {
+      bot.most_recent_chosen_coords = bot.center_corner_checks(gameboard);
+    }
+    BoardPositions::Edge => {
+      bot.most_recent_chosen_coords = bot.center_edge_checks(gameboard);
+    }
+    _ => bot.most_recent_chosen_coords = Err("Unknown board position".to_string()),
+  }
+}
+
+fn not_center_position_checks(bot: &mut Bot, gameboard: &BoardConfig) {
+  match gameboard.get_board_position(&gameboard.last_modified_tile) {
+    BoardPositions::Corner => {
+      bot.most_recent_chosen_coords = bot.not_center_corner_checks(gameboard);
+    }
+    BoardPositions::Edge => {
+      bot.most_recent_chosen_coords = bot.not_center_edge_checks(gameboard);
+    }
+    _ => bot.most_recent_chosen_coords = Err("Unknown board position".to_string()),
   }
 }
