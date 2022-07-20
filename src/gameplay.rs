@@ -1,12 +1,8 @@
 use crate::bot::*;
 use crate::coordinate_methods::*;
 use crate::gameboard::*;
-use std::env::*;
 use std::error::Error;
 use std::io;
-
-const DEBUG_PLAY: Coordinates = (10, 10);
-const BOT_PLAY: Coordinates = (11, 11);
 
 #[derive(PartialEq, Debug)]
 pub struct GameConfig {
@@ -82,30 +78,12 @@ pub fn run_gameplay() -> Result<(), Box<dyn Error>> {
     println!();
 
     if gameconfig.player_turn {
-      let selected_tile = match parse_player_input() {
-        Ok(x) => x,
-        Err(_) => continue,
-      };
+      player_turn(&mut gameconfig);
 
-      if gameconfig.gameboard.get_board_state(&selected_tile) == &BoardStates::Empty {
-        gameconfig
-          .gameboard
-          .place_tile(&selected_tile, &gameconfig.player_symbol);
-
-        gameconfig.gameboard.tiles_covered += 1;
-        gameconfig.player_turn = false;
-      }
+      gameconfig.player_turn = false;
     } else {
-      gameconfig.bot.choose_coordinates(&gameconfig.gameboard);
+      bot_turn(&mut gameconfig.bot, &mut gameconfig.gameboard);
 
-      gameconfig.gameboard.place_tile(
-        gameconfig.bot.most_recent_chosen_coords.as_ref().unwrap(),
-        &gameconfig.bot.bot_symbol,
-      );
-
-      println!(" -- bot turn over --\n");
-
-      gameconfig.gameboard.tiles_covered += 1;
       gameconfig.player_turn = true;
     }
 
@@ -216,43 +194,23 @@ pub fn bot_play() -> Result<(), Box<dyn Error>> {
   let mut gameconfig = GameConfig::new();
   let mut second_bot = Bot::new();
 
-  for row in &mut gameconfig.gameboard.tiles {
-    for mut tile in row {
-      tile.board_state = BoardStates::Empty;
-    }
-  }
-
   second_bot.bot_symbol = gameconfig.player_symbol.clone();
 
   while gameconfig.gameboard.tiles_covered < 9 {
     gameconfig.gameboard.print_board();
 
     if gameconfig.player_turn {
-      gameconfig.bot.choose_coordinates(&gameconfig.gameboard);
-
-      gameconfig.gameboard.place_tile(
-        gameconfig.bot.most_recent_chosen_coords.as_ref().unwrap(),
-        &gameconfig.bot.bot_symbol,
-      );
+      bot_turn(&mut gameconfig.bot, &mut gameconfig.gameboard);
 
       gameconfig.player_turn = false;
 
-      println!(" -- bot 1 turn over --\n");
-
       thread::sleep(Duration::from_millis(200));
     } else {
-      second_bot.choose_coordinates(&gameconfig.gameboard);
-
-      gameconfig.gameboard.place_tile(
-        second_bot.most_recent_chosen_coords.as_ref().unwrap(),
-        &second_bot.bot_symbol,
-      );
+      bot_turn(&mut second_bot, &mut gameconfig.gameboard);
 
       gameconfig.player_turn = true;
 
-      println!(" -- bot 2 turn over --\n");
-
-      thread::sleep(Duration::from_millis(200));
+      thread::sleep(Duration::from_millis(201));
     }
 
     if gameconfig.check_if_win() {
@@ -267,10 +225,38 @@ pub fn bot_play() -> Result<(), Box<dyn Error>> {
   Ok(())
 }
 
+fn player_turn(gameconfig: &mut GameConfig) {
+  let selected_tile = match parse_player_input() {
+    Ok(x) => x,
+    Err(_) => return,
+  };
+
+  if gameconfig.gameboard.get_board_state(&selected_tile) == &BoardStates::Empty {
+    gameconfig
+      .gameboard
+      .place_tile(&selected_tile, &gameconfig.player_symbol);
+
+    gameconfig.gameboard.tiles_covered += 1;
+  }
+}
+
+fn bot_turn(bot: &mut Bot, gameboard: &mut BoardConfig) {
+  bot.choose_coordinates(gameboard);
+
+  gameboard.place_tile(
+    bot.most_recent_chosen_coords.as_ref().unwrap(),
+    &bot.bot_symbol,
+  );
+
+  println!(" -- bot turn over --\n");
+
+  gameboard.tiles_covered += 1;
+}
+
 pub fn run_args(user_input: Vec<String>) -> Result<(), Box<dyn Error>> {
   match user_input[1].to_lowercase().trim() {
-    "bot_play" => return bot_play(),
-    "free_play" => return free_play(),
-    _ => return Ok(()),
+    "bot_play" => bot_play(),
+    "free_play" => free_play(),
+    _ => Ok(()),
   }
 }
