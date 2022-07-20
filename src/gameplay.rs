@@ -226,17 +226,23 @@ pub fn bot_play() -> Result<(), Box<dyn Error>> {
 }
 
 fn player_turn(gameconfig: &mut GameConfig) {
-  let selected_tile = match parse_player_input() {
-    Ok(x) => x,
-    Err(_) => return,
-  };
+  loop {
+    let selected_tile = match parse_player_input() {
+      Ok(x) => x,
+      Err(_) => return,
+    };
 
-  if gameconfig.gameboard.get_board_state(&selected_tile) == &BoardStates::Empty {
-    gameconfig
-      .gameboard
-      .place_tile(&selected_tile, &gameconfig.player_symbol);
+    if gameconfig.gameboard.get_board_state(&selected_tile) == &BoardStates::Empty {
+      gameconfig
+        .gameboard
+        .place_tile(&selected_tile, &gameconfig.player_symbol);
 
-    gameconfig.gameboard.tiles_covered += 1;
+      gameconfig.gameboard.tiles_covered += 1;
+
+      break;
+    } else {
+      gameconfig.gameboard.print_board();
+    }
   }
 }
 
