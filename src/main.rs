@@ -1,22 +1,18 @@
 use std::env::args;
-use tictactoe_with_ai::gameplay::{run_args, run_gameplay};
+use tictactoe_with_ai::gameplay::{run_args, run_gameplay, GameConfig};
 
 fn main() {
-  println!("\n\n");
-  println!(" -- run the program with 'bot_play' or 'free_play' for other modes -- ");
-  println!("\n\n");
+  println!("\n\n -- run the program with 'bot_play' or 'free_play' for other modes -- \n\n");
 
-  let args: Vec<String> = args().collect();
+  let args: Option<String> = args().nth(1);
+  let mut gameconfig = GameConfig::new()
+    .unwrap_or_else(|error| panic!("An error has occured while grabbing config: '{error}'"));
 
-  if args.len() > 1 {
-    if let Err(error) = run_args(args) {
-      eprintln!("An error has occured: '{}'", error);
+  if let Some(gamemode) = args {
+    if let Err(error) = run_args(gamemode, &mut gameconfig) {
+      eprintln!("An error has occured processing args: '{}'", error);
     }
-
-    return;
-  }
-
-  if let Err(error) = run_gameplay() {
-    eprintln!("An error has occured: '{}'", error);
+  } else if let Err(error) = run_gameplay(&mut gameconfig) {
+    eprintln!("An error has occured during gameplay: '{}'", error);
   }
 }

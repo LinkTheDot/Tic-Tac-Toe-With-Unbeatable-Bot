@@ -5,6 +5,7 @@ use crate::gameplay::GameConfig;
 impl Default for GameConfig {
   fn default() -> Self {
     Self::new()
+      .unwrap_or_else(|error| panic!("An error has occured while grabbing config: '{error}'"))
   }
 }
 

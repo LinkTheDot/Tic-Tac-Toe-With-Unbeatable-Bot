@@ -17,54 +17,57 @@ mod check_if_win_logic {
 
   #[test]
   fn side_vaild_win() {
-    let mut game_config = GameConfig::new();
+    let mut gameconfig = GameConfig::new()
+      .unwrap_or_else(|error| panic!("An error has occured while grabbing config: '{error}'"));
     let checking_from = (0, 0);
     let expected_outcome = true;
 
-    game_config.gameboard.last_modified_tile = checking_from;
+    gameconfig.gameboard.last_modified_tile = checking_from;
 
     //X|X|X
     //-|-|-
     //-|-|-
-    game_config.gameboard.place_tile(&(0, 0), &BoardStates::X);
-    game_config.gameboard.place_tile(&(0, 1), &BoardStates::X);
-    game_config.gameboard.place_tile(&(0, 2), &BoardStates::X);
+    gameconfig.gameboard.place_tile(&(0, 0), &BoardStates::X);
+    gameconfig.gameboard.place_tile(&(0, 1), &BoardStates::X);
+    gameconfig.gameboard.place_tile(&(0, 2), &BoardStates::X);
 
-    assert_eq!(game_config.check_if_win(), expected_outcome);
+    assert_eq!(gameconfig.check_if_win(), expected_outcome);
   }
 
   #[test]
   fn in_between_valid_win() {
-    let mut game_config = GameConfig::new();
+    let mut gameconfig = GameConfig::new()
+      .unwrap_or_else(|error| panic!("An error has occured while grabbing config: '{error}'"));
     let checking_from = (1, 0);
     let expected_outcome = true;
 
-    game_config.gameboard.last_modified_tile = checking_from;
+    gameconfig.gameboard.last_modified_tile = checking_from;
 
     //X|-|-
     //X|-|-
     //X|-|-
-    game_config.gameboard.place_tile(&(0, 0), &BoardStates::X);
-    game_config.gameboard.place_tile(&(1, 0), &BoardStates::X);
-    game_config.gameboard.place_tile(&(2, 0), &BoardStates::X);
+    gameconfig.gameboard.place_tile(&(0, 0), &BoardStates::X);
+    gameconfig.gameboard.place_tile(&(1, 0), &BoardStates::X);
+    gameconfig.gameboard.place_tile(&(2, 0), &BoardStates::X);
 
-    assert_eq!(game_config.check_if_win(), expected_outcome);
+    assert_eq!(gameconfig.check_if_win(), expected_outcome);
   }
 
   #[test]
   fn two_in_a_row_possible_overflow() {
-    let mut game_config = GameConfig::new();
+    let mut gameconfig = GameConfig::new()
+      .unwrap_or_else(|error| panic!("An error has occured while grabbing config: '{error}'"));
     let checking_from = (1, 0);
     let expected_outcome = false;
 
-    game_config.gameboard.last_modified_tile = checking_from;
+    gameconfig.gameboard.last_modified_tile = checking_from;
 
     //X|-|-
     //X|-|-
     //-|-|-
-    game_config.gameboard.place_tile(&(0, 0), &BoardStates::X);
-    game_config.gameboard.place_tile(&(1, 0), &BoardStates::X);
+    gameconfig.gameboard.place_tile(&(0, 0), &BoardStates::X);
+    gameconfig.gameboard.place_tile(&(1, 0), &BoardStates::X);
 
-    assert_eq!(game_config.check_if_win(), expected_outcome);
+    assert_eq!(gameconfig.check_if_win(), expected_outcome);
   }
 }

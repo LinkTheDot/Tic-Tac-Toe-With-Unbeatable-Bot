@@ -14,7 +14,7 @@ pub struct GameConfig {
 }
 
 impl GameConfig {
-  pub fn new() -> GameConfig {
+  pub fn new() -> Result<GameConfig, Box<dyn Error>> {
     let player_turn = rand::random::<bool>();
     let mut bot = Bot::new();
 
@@ -26,13 +26,13 @@ impl GameConfig {
       BoardStates::O
     };
 
-    GameConfig {
+    Ok(GameConfig {
       player_turn,
       player_symbol,
       gameboard: BoardConfig::new(),
       end_gamestate: GameState::Draw,
       bot,
-    }
+    })
   }
 
   pub fn check_if_win(&mut self) -> bool {
@@ -58,15 +58,13 @@ pub enum GameState {
   Draw,
 }
 
-pub fn run_gameplay() -> Result<(), Box<dyn Error>> {
-  let mut gameconfig = GameConfig::new();
-
+pub fn run_gameplay(gameconfig: &mut GameConfig) -> Result<(), Box<dyn Error>> {
   while gameconfig.gameboard.tiles_covered < 9 {
     gameconfig.gameboard.print_board();
     println!();
 
     if gameconfig.player_turn {
-      player_turn(&mut gameconfig);
+      player_turn(gameconfig);
 
       gameconfig.player_turn = false;
     } else {
@@ -130,9 +128,7 @@ fn index_parsing(player_input: String) -> Result<Coordinates, Box<dyn Error>> {
   Err(Box::from("incorrect input"))
 }
 
-pub fn free_play() -> Result<(), Box<dyn Error>> {
-  let mut gameconfig = GameConfig::new();
-
+pub fn free_play(gameconfig: &mut GameConfig) -> Result<(), Box<dyn Error>> {
   while gameconfig.gameboard.tiles_covered < 9 {
     gameconfig.gameboard.print_board();
 
@@ -176,11 +172,10 @@ pub fn free_play() -> Result<(), Box<dyn Error>> {
   Ok(())
 }
 
-pub fn bot_play() -> Result<(), Box<dyn Error>> {
+pub fn bot_play(gameconfig: &mut GameConfig) -> Result<(), Box<dyn Error>> {
   use std::thread;
   use std::time::Duration;
 
-  let mut gameconfig = GameConfig::new();
   let mut second_bot = Bot::new();
 
   second_bot.bot_symbol = gameconfig.player_symbol.clone();
@@ -248,10 +243,10 @@ fn bot_turn(bot: &mut Bot, gameboard: &mut BoardConfig) {
   gameboard.tiles_covered += 1;
 }
 
-pub fn run_args(user_input: Vec<String>) -> Result<(), Box<dyn Error>> {
-  match user_input[1].to_lowercase().trim() {
-    "bot_play" => bot_play(),
-    "free_play" => free_play(),
+pub fn run_args(user_input: String, gameconfig: &mut GameConfig) -> Result<(), Box<dyn Error>> {
+  match user_input.to_lowercase().trim() {
+    "bot_play" => bot_play(gameconfig),
+    "free_play" => free_play(gameconfig),
     _ => Ok(()),
   }
 }

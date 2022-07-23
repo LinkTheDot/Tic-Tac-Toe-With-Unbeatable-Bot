@@ -445,7 +445,8 @@ mod known_bugs {
     //
 
     for _x in 0..50 {
-      let mut gameconfig = GameConfig::new();
+      let mut gameconfig = GameConfig::new()
+        .unwrap_or_else(|error| panic!("An error has occured while grabbing config: '{error}'"));
 
       gameconfig.player_symbol = PLAYER_BOARD_SYMBOL;
       gameconfig.bot.bot_symbol = BOT_BOARD_SYMBOL;
