@@ -10,9 +10,9 @@ fn main() {
 
   if let Some(gamemode) = args {
     if let Err(error) = check_args_for_gamemodes(gamemode, &mut gameconfig) {
-      eprintln!("An error has occured processing args: '{}'", error);
+      eprintln!("An error has occured processing args: '{error}'");
     }
   } else if let Err(error) = run_gameplay(&mut gameconfig) {
-    eprintln!("An error has occured during gameplay: '{}'", error);
+    eprintln!("An error has occured during gameplay: '{error}'");
   }
 }

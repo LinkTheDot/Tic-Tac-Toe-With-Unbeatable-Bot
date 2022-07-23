@@ -126,8 +126,6 @@ mod center_checks {
   #![allow(unused)]
   use super::*;
 
-  // might need a few more tests for corner?
-
   #[cfg(test)]
   mod edge_checks {
     use super::*;
@@ -444,7 +442,7 @@ mod known_bugs {
     //       X|-|-
     //
 
-    for _x in 0..50 {
+    for _x in 0..25 {
       let mut gameconfig = GameConfig::new()
         .unwrap_or_else(|error| panic!("An error has occured while grabbing config: '{error}'"));
 
