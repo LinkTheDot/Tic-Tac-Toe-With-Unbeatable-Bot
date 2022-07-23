@@ -38,12 +38,13 @@ impl GameConfig {
   pub fn check_if_win(&mut self) -> bool {
     self
       .gameboard
-      .matching_adjacent_tiles(&self.gameboard.last_modified_tile)
+      .matching_adjacent_tiles(&self.gameboard.last_modified_tile.unwrap())
       .iter()
       .filter(|coords| {
         self
           .gameboard
           .last_modified_tile
+          .unwrap()
           .is_matching_in_a_row(coords, &self.gameboard)
       })
       .count()
@@ -60,7 +61,6 @@ pub enum GameState {
 
 pub fn run_gameplay(gameconfig: &mut GameConfig) -> Result<(), Box<dyn Error>> {
   while gameconfig.gameboard.tiles_covered < 9 {
-    gameconfig.gameboard.print_board();
     println!();
 
     if gameconfig.player_turn {
@@ -128,10 +128,11 @@ fn index_parsing(player_input: String) -> Result<Coordinates, Box<dyn Error>> {
   Err(Box::from("incorrect input"))
 }
 
+// =============================================
+//        possibly fix this up a bit
+// =============================================
 pub fn free_play(gameconfig: &mut GameConfig) -> Result<(), Box<dyn Error>> {
   while gameconfig.gameboard.tiles_covered < 9 {
-    gameconfig.gameboard.print_board();
-
     let place_symbol = if gameconfig.player_turn {
       &gameconfig.player_symbol
     } else {
@@ -181,8 +182,6 @@ pub fn bot_play(gameconfig: &mut GameConfig) -> Result<(), Box<dyn Error>> {
   second_bot.bot_symbol = gameconfig.player_symbol.clone();
 
   while gameconfig.gameboard.tiles_covered < 9 {
-    gameconfig.gameboard.print_board();
-
     if gameconfig.player_turn {
       bot_turn(&mut gameconfig.bot, &mut gameconfig.gameboard);
 
@@ -211,9 +210,11 @@ pub fn bot_play(gameconfig: &mut GameConfig) -> Result<(), Box<dyn Error>> {
 
 fn player_turn(gameconfig: &mut GameConfig) {
   loop {
+    gameconfig.gameboard.print_board();
+
     let selected_tile = match parse_player_input() {
       Ok(x) => x,
-      Err(_) => return,
+      Err(_) => continue,
     };
 
     if gameconfig.gameboard.get_board_state(&selected_tile) == &BoardStates::Empty {
@@ -231,6 +232,8 @@ fn player_turn(gameconfig: &mut GameConfig) {
 }
 
 fn bot_turn(bot: &mut Bot, gameboard: &mut BoardConfig) {
+  gameboard.print_board();
+
   bot.choose_coordinates(gameboard);
 
   gameboard.place_tile(
@@ -243,7 +246,10 @@ fn bot_turn(bot: &mut Bot, gameboard: &mut BoardConfig) {
   gameboard.tiles_covered += 1;
 }
 
-pub fn run_args(user_input: String, gameconfig: &mut GameConfig) -> Result<(), Box<dyn Error>> {
+pub fn check_args_for_gamemodes(
+  user_input: String,
+  gameconfig: &mut GameConfig,
+) -> Result<(), Box<dyn Error>> {
   match user_input.to_lowercase().trim() {
     "bot_play" => bot_play(gameconfig),
     "free_play" => free_play(gameconfig),

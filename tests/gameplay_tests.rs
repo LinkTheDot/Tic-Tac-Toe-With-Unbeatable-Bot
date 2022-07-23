@@ -22,7 +22,7 @@ mod check_if_win_logic {
     let checking_from = (0, 0);
     let expected_outcome = true;
 
-    gameconfig.gameboard.last_modified_tile = checking_from;
+    gameconfig.gameboard.last_modified_tile = Some(checking_from);
 
     //X|X|X
     //-|-|-
@@ -41,7 +41,7 @@ mod check_if_win_logic {
     let checking_from = (1, 0);
     let expected_outcome = true;
 
-    gameconfig.gameboard.last_modified_tile = checking_from;
+    gameconfig.gameboard.last_modified_tile = Some(checking_from);
 
     //X|-|-
     //X|-|-
@@ -60,7 +60,7 @@ mod check_if_win_logic {
     let checking_from = (1, 0);
     let expected_outcome = false;
 
-    gameconfig.gameboard.last_modified_tile = checking_from;
+    gameconfig.gameboard.last_modified_tile = Some(checking_from);
 
     //X|-|-
     //X|-|-

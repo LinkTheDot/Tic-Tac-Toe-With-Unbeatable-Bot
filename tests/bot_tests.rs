@@ -475,6 +475,7 @@ mod known_bugs {
       let second_move = gameconfig
         .gameboard
         .last_modified_tile
+        .unwrap()
         .get_opposite_coordinates(&first_move);
 
       gameconfig

@@ -12,7 +12,7 @@ pub struct BoardConfig {
   pub tiles: [[BoardTile; GRID_SIZE]; GRID_SIZE],
   pub tiles_covered: u8,
   pub player_symbol: BoardStates,
-  pub last_modified_tile: Coordinates,
+  pub last_modified_tile: Option<Coordinates>,
 }
 
 #[derive(PartialEq, Clone, Debug)]
@@ -59,7 +59,7 @@ impl BoardConfig {
       tiles,
       tiles_covered: 0,
       player_symbol: BoardStates::Empty,
-      last_modified_tile: (69, 69), // make option
+      last_modified_tile: None,
     }
   }
 
@@ -107,7 +107,7 @@ impl BoardConfig {
   }
 
   pub fn place_tile(&mut self, coords: &Coordinates, changed_state: &BoardStates) {
-    self.last_modified_tile = *coords;
+    self.last_modified_tile = Some(*coords);
     self.tiles[coords.0][coords.1].board_state = changed_state.clone();
   }
 
@@ -166,7 +166,7 @@ impl BoardConfig {
   }
 
   pub fn last_placed_tile_to_game_state(&mut self) -> GameState {
-    match self.get_board_state(&self.last_modified_tile) {
+    match self.get_board_state(&self.last_modified_tile.unwrap()) {
       BoardStates::X => GameState::XWon,
       BoardStates::O => GameState::OWon,
       _ => GameState::Draw,

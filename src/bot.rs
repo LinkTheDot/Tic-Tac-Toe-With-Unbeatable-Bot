@@ -167,7 +167,7 @@ impl Bot {
       .unwrap()
       .get_edges_around_corner(gameboard)
       .into_iter()
-      .filter(|edge| edge == &gameboard.last_modified_tile)
+      .filter(|edge| edge == &gameboard.last_modified_tile.unwrap())
       .collect::<Vec<Coordinates>>();
 
     if !edge_coords_around_bot_corner.is_empty() {
@@ -188,6 +188,7 @@ impl Bot {
 
         let opposite_coords = gameboard
           .last_modified_tile
+          .unwrap()
           .get_opposite_coordinates(&CENTER_TILE);
 
         if gameboard.get_board_state(&opposite_coords) == &BoardStates::Empty {
@@ -215,6 +216,7 @@ impl Bot {
 
         let corners_near_player_edge = gameboard
           .last_modified_tile
+          .unwrap()
           .get_corners_around_edge(gameboard);
 
         Ok(corners_near_player_edge[rand::thread_rng().gen_range(0..1)])
@@ -232,7 +234,9 @@ impl Bot {
       gameboard.check_if_two_in_series(self.most_recent_chosen_coords.as_ref().unwrap())
     {
       Ok(coords)
-    } else if let Some(coords) = gameboard.check_if_two_in_series(&gameboard.last_modified_tile) {
+    } else if let Some(coords) =
+      gameboard.check_if_two_in_series(&gameboard.last_modified_tile.unwrap())
+    {
       Ok(coords)
     } else if let Some(coords) = gameboard.get_random_empty_corner_then_edge() {
       Ok(coords)
@@ -302,6 +306,7 @@ fn center_edge_check_placed_corner_then_edge(
 
   let coords_around_player_edge = gameboard
     .last_modified_tile
+    .unwrap()
     .get_corners_around_edge(gameboard);
 
   if coords_around_player_edge.iter().find_map(|coords| {
@@ -327,10 +332,12 @@ fn not_center_corner_check_placed_edge_near(
 
   if gameboard
     .last_modified_tile
+    .unwrap()
     .get_corners_around_edge(gameboard)
     .iter()
     .filter(|coords| {
-      gameboard.get_board_state(coords) == gameboard.get_board_state(&gameboard.last_modified_tile)
+      gameboard.get_board_state(coords)
+        == gameboard.get_board_state(&gameboard.last_modified_tile.unwrap())
     })
     .count()
     != 0
@@ -338,6 +345,7 @@ fn not_center_corner_check_placed_edge_near(
     Ok(
       gameboard
         .last_modified_tile
+        .unwrap()
         .get_opposite_coordinates(&CENTER_TILE),
     )
   } else {
@@ -347,7 +355,7 @@ fn not_center_corner_check_placed_edge_near(
 }
 
 fn center_position_checks(bot: &mut Bot, gameboard: &BoardConfig) {
-  match gameboard.get_board_position(&gameboard.last_modified_tile) {
+  match gameboard.get_board_position(&gameboard.last_modified_tile.unwrap()) {
     BoardPositions::Corner => {
       bot.most_recent_chosen_coords = bot.center_corner_checks(gameboard);
     }
@@ -359,7 +367,7 @@ fn center_position_checks(bot: &mut Bot, gameboard: &BoardConfig) {
 }
 
 fn not_center_position_checks(bot: &mut Bot, gameboard: &BoardConfig) {
-  match gameboard.get_board_position(&gameboard.last_modified_tile) {
+  match gameboard.get_board_position(&gameboard.last_modified_tile.unwrap()) {
     BoardPositions::Corner => {
       bot.most_recent_chosen_coords = bot.not_center_corner_checks(gameboard);
     }
