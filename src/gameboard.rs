@@ -1,4 +1,5 @@
 use crate::coordinate_methods::*;
+use crate::gameplay::GameState;
 use rand::prelude::*;
 use std::fmt::{Display, Formatter, Result};
 
@@ -144,7 +145,7 @@ impl BoardConfig {
     if let Some(coords) = self.get_random_empty_corner() {
       Some(coords)
     } else {
-      self.get_random_empty_edge().map(|coords| coords)
+      self.get_random_empty_edge()
     }
   }
 
@@ -161,6 +162,14 @@ impl BoardConfig {
       BoardPositions::Edge => series_of_two_edge_check(self, check_from, nearby_coords),
       BoardPositions::Corner => series_of_two_corner_check(self, check_from, nearby_coords),
       _ => None,
+    }
+  }
+
+  pub fn last_placed_tile_to_game_state(&mut self) -> GameState {
+    match self.get_board_state(&self.last_modified_tile) {
+      BoardStates::X => GameState::XWon,
+      BoardStates::O => GameState::OWon,
+      _ => GameState::Draw,
     }
   }
 }
@@ -186,7 +195,7 @@ impl Display for BoardTile {
   }
 }
 
-pub fn series_of_two_edge_check(
+fn series_of_two_edge_check(
   gameboard: &BoardConfig,
   check_from: &Coordinates,
   nearby_coords: Vec<Coordinates>,
@@ -219,7 +228,7 @@ pub fn series_of_two_edge_check(
   }
 }
 
-pub fn series_of_two_corner_check(
+fn series_of_two_corner_check(
   gameboard: &BoardConfig,
   check_from: &Coordinates,
   nearby_coords: Vec<Coordinates>,

@@ -25,7 +25,9 @@ pub trait CoordinateMethods {
     board_config: &BoardConfig,
   ) -> Option<bool>;
 
-  fn get_coords_around_excluding_center(&self) -> Vec<Coordinates>;
+  fn get_corners_around_edge(&self, gameboard: &BoardConfig) -> Vec<Coordinates>;
+  fn get_edges_around_corner(&self, gameboard: &BoardConfig) -> Vec<Coordinates>;
+
   fn get_coords_around(&self) -> Vec<Coordinates>;
 }
 
@@ -138,24 +140,20 @@ impl CoordinateMethods for Coordinates {
     }
   }
 
-  /// if you pass in an edge it'll return corners
-  /// if you pass in a corner it'll return edges
-  /// if you end up passing in the center then you'll get all edges
-  fn get_coords_around_excluding_center(&self) -> Vec<Coordinates> {
-    let isize_coordinates: [isize; 2] = [self.0.try_into().unwrap(), self.1.try_into().unwrap()];
+  fn get_corners_around_edge(&self, gameboard: &BoardConfig) -> Vec<Coordinates> {
+    if gameboard.get_board_position(self) == &BoardPositions::Edge {
+      get_corners_around_edge_and_edges_around_corner(self)
+    } else {
+      vec![]
+    }
+  }
 
-    [
-      (isize_coordinates[0] + 1, isize_coordinates[1]),
-      (isize_coordinates[0] - 1, isize_coordinates[1]),
-      (isize_coordinates[0], isize_coordinates[1] + 1),
-      (isize_coordinates[0], isize_coordinates[1] - 1),
-    ]
-    .into_iter()
-    .filter(|coords| {
-      coords.0 != -1 && coords.0 != 3 && coords.1 != -1 && coords.1 != 3 && coords != &(1, 1)
-    })
-    .map(|coords| (coords.0.try_into().unwrap(), coords.1.try_into().unwrap()))
-    .collect::<Vec<Coordinates>>()
+  fn get_edges_around_corner(&self, gameboard: &BoardConfig) -> Vec<Coordinates> {
+    if gameboard.get_board_position(self) == &BoardPositions::Corner {
+      get_corners_around_edge_and_edges_around_corner(self)
+    } else {
+      vec![]
+    }
   }
 
   fn get_coords_around(&self) -> Vec<Coordinates> {
@@ -172,8 +170,34 @@ impl CoordinateMethods for Coordinates {
       (isize_coordinates[0] + 1, isize_coordinates[1] - 1),
     ]
     .into_iter()
-    .filter(|coords| coords.0 != -1 && coords.0 != 3 && coords.1 != -1 && coords.1 != 3)
+    .filter(|coords| {
+      coords.0 != -1 && coords.0 != ISIZE_GRID_SIZE && coords.1 != -1 && coords.1 != ISIZE_GRID_SIZE
+    })
     .map(|coords| (coords.0.try_into().unwrap(), coords.1.try_into().unwrap()))
     .collect::<Vec<Coordinates>>()
   }
+}
+
+fn get_corners_around_edge_and_edges_around_corner(coordinates: &Coordinates) -> Vec<Coordinates> {
+  let isize_coordinates: [isize; 2] = [
+    coordinates.0.try_into().unwrap(),
+    coordinates.1.try_into().unwrap(),
+  ];
+
+  [
+    (isize_coordinates[0] + 1, isize_coordinates[1]),
+    (isize_coordinates[0] - 1, isize_coordinates[1]),
+    (isize_coordinates[0], isize_coordinates[1] + 1),
+    (isize_coordinates[0], isize_coordinates[1] - 1),
+  ]
+  .into_iter()
+  .filter(|coords| {
+    coords.0 != -1
+      && coords.0 != ISIZE_GRID_SIZE
+      && coords.1 != -1
+      && coords.1 != ISIZE_GRID_SIZE
+      && coords != &(1, 1)
+  })
+  .map(|coords| (coords.0.try_into().unwrap(), coords.1.try_into().unwrap()))
+  .collect::<Vec<Coordinates>>()
 }

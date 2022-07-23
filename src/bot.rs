@@ -4,13 +4,6 @@ use rand::prelude::*;
 
 const CENTER_TILE: Coordinates = (1, 1);
 
-// -- bugs --
-//
-// when player doesn't block the bot's forced corner placement under path
-// CurrentPath::Center(BotCenterPaths::PlayerPlacedEdge)
-// the bot doesn't take that and proceeds to follow through with a, funnily enough
-// triple win condition
-
 #[derive(PartialEq, Debug)]
 pub struct Bot {
   pub path: CurrentPath,
@@ -29,18 +22,44 @@ pub enum CurrentPath {
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum BotCenterPaths {
-  PlayerPlacedEdge,         // move 2
-  PlayerPlacedCorner,       // move 4
-  PlayerPlacedEdgeThenEdge, // move 6
+  PlayerPlacedEdge,
+  PlayerPlacedCorner,
   Unknown,
 }
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum PlayerCenterPaths {
-  PlayerDidntPlaceCenter, // ???????
-  PlayerPlacedEdgeNear,   // move 3
+  PlayerDidntPlaceCenter,
+  PlayerPlacedEdgeNear,
   Unknown,
 }
+
+//                   == LOGIC ==
+//
+// --FIRST TWO MOVES--
+// if you get center and player places on an edge, win is Guaranteed
+// if you get center and player places on corner, win is possible
+// if you don't get center, never place on edge, always corner
+//
+// --PLAYER PLACES ON EDGE WITH YOU CENTER--
+// place a piece on a corner next to player to force them to block your first 3 in a row
+// place on edge next to corner you placed
+// win
+//
+// --PLAYER PLACES ON CORNER WITH YOU CENTER--
+// place on corner opposite of player
+// if player places on an edge win is Guaranteed
+// if player places on any corner, FocusDraw
+//
+// --PLAYER HAS CENTER--
+// win is Medium
+// place on corner
+// if player places on opposite corner place on a corner and FocusDraw
+// if player places on edge next to your piece get opposite and place there
+//   - if from there player places on the corner over their edge from your corner,
+//   win is Guaranteed
+//   - otherwise FocusDraw
+// if player places anywhere else FocusDraw
 
 impl Bot {
   pub fn new() -> Self {
@@ -50,31 +69,6 @@ impl Bot {
       most_recent_chosen_coords: Err("No error has been given".to_string()),
     }
   }
-
-  // --FIRST TWO MOVES--
-  // if you get center and player places on an edge, win is Guaranteed
-  // if you get center and player places on corner, win is possible
-  // if you don't get center, never place on edge, always corner
-
-  // --PLAYER PLACES ON EDGE WITH YOU CENTER--
-  // place a piece on a corner next to player to force them to block your first 3 in a row
-  // place on edge next to corner you placed
-  // win
-
-  // --PLAYER PLACES ON CORNER WITH YOU CENTER--
-  // place on corner opposite of player
-  // if player places on an edge win is Guaranteed
-  // if player places on any corner, FocusDraw
-
-  // --PLAYER HAS CENTER--
-  // win is Medium
-  // place on corner
-  // if player places on opposite corner place on a corner and FocusDraw
-  // if player places on edge next to your piece get opposite and place there
-  //   - if from there player places on the corner over their edge from your corner,
-  //   win is Guaranteed
-  //   - otherwise FocusDraw
-  // if player places anywhere else FocusDraw
 
   pub fn choose_coordinates(&mut self, gameboard: &BoardConfig) {
     match &self.path {
@@ -171,7 +165,7 @@ impl Bot {
       .most_recent_chosen_coords
       .as_ref()
       .unwrap()
-      .get_coords_around_excluding_center()
+      .get_edges_around_corner(gameboard)
       .into_iter()
       .filter(|edge| edge == &gameboard.last_modified_tile)
       .collect::<Vec<Coordinates>>();
@@ -221,7 +215,7 @@ impl Bot {
 
         let corners_near_player_edge = gameboard
           .last_modified_tile
-          .get_coords_around_excluding_center();
+          .get_corners_around_edge(gameboard);
 
         Ok(corners_near_player_edge[rand::thread_rng().gen_range(0..1)])
       }
@@ -265,7 +259,7 @@ fn center_corner_check_placed_edge(
       .most_recent_chosen_coords
       .as_ref()
       .unwrap()
-      .get_coords_around_excluding_center()
+      .get_edges_around_corner(gameboard)
       .iter()
       .find_map(|coords| {
         if gameboard.get_board_state(coords) == &BoardStates::Empty {
@@ -274,7 +268,7 @@ fn center_corner_check_placed_edge(
           None
         }
       })
-      .ok_or_else(|| "No open edge around 'chosen_placement'".to_string())
+      .ok_or_else(|| "No open edge around 'most_recent_chosen_coords'".to_string())
   } else {
     bot.auto_play(gameboard)
   }
@@ -288,7 +282,7 @@ fn center_edge_check_placed_edge_near(
     .most_recent_chosen_coords
     .as_ref()
     .unwrap()
-    .get_coords_around_excluding_center()
+    .get_edges_around_corner(gameboard)
     .iter()
     .find_map(|coords| {
       if gameboard.get_board_state(coords) == &BoardStates::Empty {
@@ -308,7 +302,7 @@ fn center_edge_check_placed_corner_then_edge(
 
   let coords_around_player_edge = gameboard
     .last_modified_tile
-    .get_coords_around_excluding_center();
+    .get_corners_around_edge(gameboard);
 
   if coords_around_player_edge.iter().find_map(|coords| {
     if gameboard.get_board_state(coords) != &BoardStates::Empty {
@@ -333,7 +327,7 @@ fn not_center_corner_check_placed_edge_near(
 
   if gameboard
     .last_modified_tile
-    .get_coords_around_excluding_center()
+    .get_corners_around_edge(gameboard)
     .iter()
     .filter(|coords| {
       gameboard.get_board_state(coords) == gameboard.get_board_state(&gameboard.last_modified_tile)

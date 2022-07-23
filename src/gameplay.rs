@@ -16,9 +16,8 @@ pub struct GameConfig {
 impl GameConfig {
   pub fn new() -> GameConfig {
     let player_turn = rand::random::<bool>();
-    let gameboard = BoardConfig::new();
-    let end_gamestate = GameState::Draw;
     let mut bot = Bot::new();
+
     let player_symbol = if player_turn {
       bot.bot_symbol = BoardStates::O;
       BoardStates::X
@@ -30,8 +29,8 @@ impl GameConfig {
     GameConfig {
       player_turn,
       player_symbol,
-      gameboard,
-      end_gamestate,
+      gameboard: BoardConfig::new(),
+      end_gamestate: GameState::Draw,
       bot,
     }
   }
@@ -49,17 +48,6 @@ impl GameConfig {
       })
       .count()
       != 0
-  }
-
-  pub fn last_placed_tile_to_game_state(&mut self) -> GameState {
-    match self
-      .gameboard
-      .get_board_state(&self.gameboard.last_modified_tile)
-    {
-      BoardStates::X => GameState::XWon,
-      BoardStates::O => GameState::OWon,
-      _ => GameState::Draw,
-    }
   }
 }
 
@@ -88,7 +76,8 @@ pub fn run_gameplay() -> Result<(), Box<dyn Error>> {
     }
 
     if gameconfig.check_if_win() {
-      gameconfig.end_gamestate = gameconfig.last_placed_tile_to_game_state();
+      gameconfig.end_gamestate = gameconfig.gameboard.last_placed_tile_to_game_state();
+
       break;
     }
   }
@@ -204,17 +193,17 @@ pub fn bot_play() -> Result<(), Box<dyn Error>> {
 
       gameconfig.player_turn = false;
 
-      thread::sleep(Duration::from_millis(200));
+      thread::sleep(Duration::from_millis(500));
     } else {
       bot_turn(&mut second_bot, &mut gameconfig.gameboard);
 
       gameconfig.player_turn = true;
 
-      thread::sleep(Duration::from_millis(201));
+      thread::sleep(Duration::from_millis(500));
     }
 
     if gameconfig.check_if_win() {
-      gameconfig.end_gamestate = gameconfig.last_placed_tile_to_game_state();
+      gameconfig.end_gamestate = gameconfig.gameboard.last_placed_tile_to_game_state();
       break;
     }
   }
