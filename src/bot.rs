@@ -123,7 +123,7 @@ impl Bot {
 
           Ok(gameboard.get_random_empty_corner().unwrap())
         }
-        _ => Err("neither 'Unknown' or 'DidntPlaceCenter'".to_string()),
+        _ => Err("neither 'Unknown' or 'PlayerDidntPlaceCenter'".to_string()),
       }
     } else {
       Err("non-NotCenter path has been called".to_string())
@@ -148,7 +148,7 @@ impl Bot {
             self.auto_play(gameboard)
           }
         } else {
-          Err("Last placed tile is empty".to_string())
+          Err("'most_recent_chosen_coords' is empty".to_string())
         }
       }
 
@@ -317,7 +317,7 @@ fn center_edge_check_placed_corner_then_edge(
     }
   }) != Some(&bot.bot_symbol)
   {
-    // this is when edge is far from bot corner
+    // this is when edge is far from the bot's corner
     bot.auto_play(gameboard)
   } else {
     center_edge_check_placed_edge_near(bot, gameboard)

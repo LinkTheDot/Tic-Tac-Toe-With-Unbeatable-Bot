@@ -128,31 +128,18 @@ fn index_parsing(player_input: String) -> Result<Coordinates, Box<dyn Error>> {
   Err(Box::from("incorrect input"))
 }
 
-// =============================================
-//        possibly fix this up a bit
-// =============================================
 pub fn free_play(gameconfig: &mut GameConfig) -> Result<(), Box<dyn Error>> {
+  let player_one_symbol = gameconfig.player_symbol;
+  let player_two_symbol = gameconfig.bot.bot_symbol;
+
   while gameconfig.gameboard.tiles_covered < 9 {
-    let place_symbol = if gameconfig.player_turn {
-      &gameconfig.player_symbol
+    if gameconfig.player_turn {
+      gameconfig.player_symbol = player_one_symbol;
     } else {
-      &gameconfig.bot.bot_symbol
-    };
+      gameconfig.player_symbol = player_two_symbol;
+    }
 
-    let selected_tile = match parse_player_input() {
-      Ok(coords) => {
-        if gameconfig.gameboard.get_board_state(&coords) == &BoardStates::Empty {
-          coords
-        } else {
-          continue;
-        }
-      }
-      Err(_) => continue,
-    };
-
-    gameconfig
-      .gameboard
-      .place_tile(&selected_tile, place_symbol);
+    player_turn(gameconfig);
 
     if gameconfig.check_if_win() {
       gameconfig.gameboard.print_board();
@@ -179,7 +166,7 @@ pub fn bot_play(gameconfig: &mut GameConfig) -> Result<(), Box<dyn Error>> {
 
   let mut second_bot = Bot::new();
 
-  second_bot.bot_symbol = gameconfig.player_symbol.clone();
+  second_bot.bot_symbol = gameconfig.player_symbol;
 
   while gameconfig.gameboard.tiles_covered < 9 {
     if gameconfig.player_turn {
@@ -225,8 +212,6 @@ fn player_turn(gameconfig: &mut GameConfig) {
       gameconfig.gameboard.tiles_covered += 1;
 
       break;
-    } else {
-      gameconfig.gameboard.print_board();
     }
   }
 }

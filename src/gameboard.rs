@@ -21,7 +21,7 @@ pub struct BoardTile {
   pub board_position: BoardPositions,
 }
 
-#[derive(PartialEq, Clone, Debug)]
+#[derive(PartialEq, Clone, Debug, Copy)]
 pub enum BoardStates {
   X,
   O,
@@ -108,7 +108,7 @@ impl BoardConfig {
 
   pub fn place_tile(&mut self, coords: &Coordinates, changed_state: &BoardStates) {
     self.last_modified_tile = Some(*coords);
-    self.tiles[coords.0][coords.1].board_state = changed_state.clone();
+    self.tiles[coords.0][coords.1].board_state = *changed_state;
   }
 
   pub fn get_random_empty_corner(&self) -> Option<Coordinates> {
