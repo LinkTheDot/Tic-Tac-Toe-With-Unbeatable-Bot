@@ -141,6 +141,8 @@ impl BoardConfig {
     }
   }
 
+  /// returns a random empty corner then once there're no more empty corners
+  /// it returns a random empty edge
   pub fn get_random_empty_corner_then_edge(&self) -> Option<Coordinates> {
     if let Some(coords) = self.get_random_empty_corner() {
       Some(coords)
@@ -171,6 +173,26 @@ impl BoardConfig {
       BoardStates::O => GameState::OWon,
       _ => GameState::Draw,
     }
+  }
+
+  pub fn get_first_empty_tile(&self, coordinates: Vec<Coordinates>) -> Option<Coordinates> {
+    coordinates.iter().find_map(|coords| {
+      if self.get_board_state(coords) == &BoardStates::Empty {
+        Some(*coords)
+      } else {
+        None
+      }
+    })
+  }
+
+  pub fn get_first_filled_tile(&self, coordinates: Vec<Coordinates>) -> Option<Coordinates> {
+    coordinates.iter().find_map(|coords| {
+      if self.get_board_state(coords) != &BoardStates::Empty {
+        Some(*coords)
+      } else {
+        None
+      }
+    })
   }
 }
 
