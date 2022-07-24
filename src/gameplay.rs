@@ -133,6 +133,8 @@ pub fn free_play(gameconfig: &mut GameConfig) -> Result<(), Box<dyn Error>> {
   let player_two_symbol = gameconfig.bot.bot_symbol;
 
   while gameconfig.gameboard.tiles_covered < 9 {
+    println!();
+
     if gameconfig.player_turn {
       gameconfig.player_symbol = player_one_symbol;
     } else {
@@ -169,6 +171,8 @@ pub fn bot_play(gameconfig: &mut GameConfig) -> Result<(), Box<dyn Error>> {
   second_bot.bot_symbol = gameconfig.player_symbol;
 
   while gameconfig.gameboard.tiles_covered < 9 {
+    println!();
+
     if gameconfig.player_turn {
       bot_turn(&mut gameconfig.bot, &mut gameconfig.gameboard);
 

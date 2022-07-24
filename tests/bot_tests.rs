@@ -1,125 +1,8 @@
 use tictactoe_with_ai::bot::*;
-use tictactoe_with_ai::coordinate_methods::Coordinates;
 use tictactoe_with_ai::gameboard::*;
 
 const BOT_BOARD_SYMBOL: BoardStates = BoardStates::X;
 const PLAYER_BOARD_SYMBOL: BoardStates = BoardStates::O;
-
-#[cfg(test)]
-mod not_center_logic {
-  use super::*;
-
-  #[cfg(test)]
-  mod edge_check {
-    use super::*;
-
-    #[test]
-    fn player_places_edge_near_corner() {
-      let mut bot = Bot::new();
-      let mut gameboard = BoardConfig::new();
-      let expected_coordinates = Ok((0, 1));
-
-      //-|-|-
-      //-|O|-
-      //-|O|X
-      gameboard.place_tile(&(1, 1), &PLAYER_BOARD_SYMBOL);
-      bot.most_recent_chosen_coords = Ok((2, 2));
-      gameboard.place_tile(
-        bot.most_recent_chosen_coords.as_ref().unwrap(),
-        &BOT_BOARD_SYMBOL,
-      );
-      gameboard.place_tile(&(2, 1), &PLAYER_BOARD_SYMBOL);
-
-      bot.most_recent_chosen_coords = bot.not_center_edge_checks(&gameboard);
-
-      assert_eq!(bot.most_recent_chosen_coords, expected_coordinates);
-    }
-
-    #[test]
-    fn player_places_edge_away_from_corner() {
-      let mut bot = Bot::new();
-      let mut gameboard = BoardConfig::new();
-      let expected_coordinates: Result<Coordinates, String> = Ok((2, 1));
-
-      //-|O|-
-      //-|O|-
-      //-|-|X
-      gameboard.place_tile(&(1, 1), &PLAYER_BOARD_SYMBOL);
-      bot.most_recent_chosen_coords = Ok((2, 2));
-      gameboard.place_tile(
-        bot.most_recent_chosen_coords.as_ref().unwrap(),
-        &BOT_BOARD_SYMBOL,
-      );
-      gameboard.place_tile(&(0, 1), &PLAYER_BOARD_SYMBOL);
-
-      bot.most_recent_chosen_coords = bot.not_center_edge_checks(&gameboard);
-
-      assert_eq!(bot.most_recent_chosen_coords, expected_coordinates);
-    }
-  }
-
-  #[cfg(test)]
-  mod corner_tests {
-    use super::*;
-
-    #[test]
-    fn initial_corner_check() {
-      let mut bot = Bot::new();
-      let mut gameboard = BoardConfig::new();
-      let expected_coordinates = Ok((2, 0));
-
-      //-|-|O
-      //-|O|-
-      //-|-|X
-      gameboard.place_tile(&(1, 1), &PLAYER_BOARD_SYMBOL);
-      bot.most_recent_chosen_coords = Ok((2, 2));
-      gameboard.place_tile(
-        bot.most_recent_chosen_coords.as_ref().unwrap(),
-        &BOT_BOARD_SYMBOL,
-      );
-      gameboard.place_tile(&(0, 2), &PLAYER_BOARD_SYMBOL);
-
-      bot.path = CurrentPath::NotCenter(PlayerCenterPaths::Unknown);
-      bot.most_recent_chosen_coords = bot.not_center_corner_checks(&gameboard);
-
-      assert_eq!(bot.most_recent_chosen_coords, expected_coordinates);
-    }
-
-    #[test]
-    fn player_placed_edge_near() {
-      let mut bot = Bot::new();
-      let mut gameboard = BoardConfig::new();
-      let expected_coordinates: Result<Coordinates, String> = Ok((0, 2));
-
-      //-|-|-
-      //-|O|-
-      //-|O|X
-      gameboard.place_tile(&(1, 1), &PLAYER_BOARD_SYMBOL);
-      bot.most_recent_chosen_coords = Ok((2, 2));
-      gameboard.place_tile(
-        bot.most_recent_chosen_coords.as_ref().unwrap(),
-        &BOT_BOARD_SYMBOL,
-      );
-      gameboard.place_tile(&(2, 1), &PLAYER_BOARD_SYMBOL);
-
-      bot.most_recent_chosen_coords = bot.not_center_edge_checks(&gameboard);
-
-      gameboard.place_tile(
-        bot.most_recent_chosen_coords.as_ref().unwrap(),
-        &BOT_BOARD_SYMBOL,
-      );
-
-      //-|X|-
-      //-|O|-
-      //O|O|X
-      gameboard.place_tile(&(2, 0), &PLAYER_BOARD_SYMBOL);
-
-      bot.most_recent_chosen_coords = bot.not_center_corner_checks(&gameboard);
-
-      assert_eq!(bot.most_recent_chosen_coords, expected_coordinates);
-    }
-  }
-}
 
 #[cfg(test)]
 mod center_checks {
@@ -147,7 +30,7 @@ mod center_checks {
       );
       gameboard.place_tile(&(2, 1), &PLAYER_BOARD_SYMBOL);
 
-      bot.path = CurrentPath::Center(BotCenterPaths::Unknown);
+      bot.path = CurrentPath::Center(BotPaths::Unknown);
 
       bot.most_recent_chosen_coords = bot.center_edge_checks(&gameboard);
 
@@ -160,7 +43,7 @@ mod center_checks {
       let mut bot = Bot::new();
       let expected_chosen_placement = Ok((0, 0));
 
-      bot.path = CurrentPath::Center(BotCenterPaths::Unknown);
+      bot.path = CurrentPath::Center(BotPaths::Unknown);
 
       //-|-|-
       //-|X|-
@@ -199,7 +82,7 @@ mod center_checks {
       let mut bot = Bot::new();
       let expected_chosen_placement = Ok((0, 0));
 
-      bot.path = CurrentPath::Center(BotCenterPaths::Unknown);
+      bot.path = CurrentPath::Center(BotPaths::Unknown);
 
       //-|-|-
       //-|X|-
@@ -218,7 +101,7 @@ mod center_checks {
       let mut bot = Bot::new();
       let expected_chosen_placement = Ok((2, 1));
 
-      bot.path = CurrentPath::Center(BotCenterPaths::Unknown);
+      bot.path = CurrentPath::Center(BotPaths::Unknown);
 
       //X|-|-
       //-|X|-

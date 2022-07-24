@@ -3,6 +3,7 @@ use crate::gameboard::*;
 use rand::prelude::*;
 
 const CENTER_TILE: Coordinates = (1, 1);
+const FIRST_MOVE: u8 = 0;
 
 #[derive(PartialEq, Debug)]
 pub struct Bot {
@@ -13,58 +14,24 @@ pub struct Bot {
 
 #[derive(PartialEq, Clone, Debug)]
 pub enum CurrentPath {
-  Center(BotCenterPaths),
-  NotCenter(PlayerCenterPaths),
+  Center(BotPaths),
+  PlayerDidntPlaceCenter,
   DoubleWinCondition,
   FocusDraw,
-  Unknown,
+  FirstMove,
 }
 
 #[derive(PartialEq, Clone, Debug)]
-pub enum BotCenterPaths {
+pub enum BotPaths {
   PlayerPlacedEdge,
   PlayerPlacedCorner,
   Unknown,
 }
 
-#[derive(PartialEq, Clone, Debug)]
-pub enum PlayerCenterPaths {
-  PlayerDidntPlaceCenter,
-  PlayerPlacedEdgeNear,
-  Unknown,
-}
-
-//                   == LOGIC ==
-//
-// --FIRST TWO MOVES--
-// if you get center and player places on an edge, win is Guaranteed
-// if you get center and player places on corner, win is possible
-// if you don't get center, never place on edge, always corner
-//
-// --PLAYER PLACES ON EDGE WITH YOU CENTER--
-// place a piece on a corner next to player to force them to block your first 3 in a row
-// place on edge next to corner you placed
-// win
-//
-// --PLAYER PLACES ON CORNER WITH YOU CENTER--
-// place on corner opposite of player
-// if player places on an edge win is Guaranteed
-// if player places on any corner, FocusDraw
-//
-// --PLAYER HAS CENTER--
-// win is Medium
-// place on corner
-// if player places on opposite corner place on a corner and FocusDraw
-// if player places on edge next to your piece get opposite and place there
-//   - if from there player places on the corner over their edge from your corner,
-//   win is Guaranteed
-//   - otherwise FocusDraw
-// if player places anywhere else FocusDraw
-
 impl Bot {
   pub fn new() -> Self {
     Bot {
-      path: CurrentPath::Unknown,
+      path: CurrentPath::FirstMove,
       bot_symbol: BoardStates::Empty,
       most_recent_chosen_coords: Err("No error has been given".to_string()),
     }
@@ -75,116 +42,44 @@ impl Bot {
       CurrentPath::Center(_) => {
         center_position_checks(self, gameboard);
       }
-      CurrentPath::NotCenter(_) => {
-        not_center_position_checks(self, gameboard);
-      }
       CurrentPath::FocusDraw | CurrentPath::DoubleWinCondition => {
         self.most_recent_chosen_coords = self.auto_play(gameboard);
       }
-      CurrentPath::Unknown => {
-        self.path = self.check_if_center_or_not(gameboard);
+      CurrentPath::FirstMove => {
+        self.path = self.check_if_center_is_available_or_not(gameboard);
 
-        if self.path == CurrentPath::Center(BotCenterPaths::Unknown) {
-          self.most_recent_chosen_coords = Ok(CENTER_TILE);
-        } else {
-          self.most_recent_chosen_coords = self.initial_check_of_player_center_paths(gameboard);
-        }
-      }
-    }
-  }
-
-  /// This will only be called in the first 2 moves
-  pub fn check_if_center_or_not(&self, gameboard: &BoardConfig) -> CurrentPath {
-    if gameboard.tiles_covered == 0 // /
-      && gameboard.get_board_state(&CENTER_TILE) == &BoardStates::Empty
-    {
-      CurrentPath::Center(BotCenterPaths::Unknown)
-    } else if gameboard.get_board_state(&CENTER_TILE) == &BoardStates::Empty {
-      CurrentPath::NotCenter(PlayerCenterPaths::PlayerDidntPlaceCenter)
-    } else {
-      CurrentPath::NotCenter(PlayerCenterPaths::Unknown)
-    }
-  }
-
-  /// This will only be called in the first 2 moves
-  pub fn initial_check_of_player_center_paths(
-    &mut self,
-    gameboard: &BoardConfig,
-  ) -> Result<Coordinates, String> {
-    if let CurrentPath::NotCenter(path_state) = &self.path {
-      match path_state {
-        PlayerCenterPaths::PlayerDidntPlaceCenter => {
-          self.path = CurrentPath::FocusDraw;
-
-          Ok(CENTER_TILE)
-        }
-        PlayerCenterPaths::Unknown => {
-          self.path = CurrentPath::FocusDraw;
-
-          Ok(gameboard.get_random_empty_corner().unwrap())
-        }
-        _ => Err("neither 'Unknown' or 'PlayerDidntPlaceCenter'".to_string()),
-      }
-    } else {
-      Err("non-NotCenter path has been called".to_string())
-    }
-  }
-
-  pub fn not_center_corner_checks(
-    &mut self,
-    gameboard: &BoardConfig,
-  ) -> Result<Coordinates, String> {
-    match &self.path {
-      CurrentPath::NotCenter(PlayerCenterPaths::Unknown) => {
-        if let Ok(bot_tile) = &self.most_recent_chosen_coords {
-          let corner_state_opposite_bot_corner =
-            gameboard.get_board_state(&bot_tile.get_opposite_coordinates(&CENTER_TILE));
-
-          self.path = CurrentPath::FocusDraw;
-
-          if corner_state_opposite_bot_corner != &BoardStates::Empty {
-            Ok(gameboard.get_random_empty_corner().unwrap())
-          } else {
-            self.auto_play(gameboard)
+        self.most_recent_chosen_coords = match self.path {
+          CurrentPath::Center(BotPaths::Unknown) => Ok(CENTER_TILE),
+          CurrentPath::PlayerDidntPlaceCenter => {
+            self.path = CurrentPath::FocusDraw;
+            Ok(CENTER_TILE)
           }
-        } else {
-          Err("'most_recent_chosen_coords' is empty".to_string())
-        }
+          _ => gameboard
+            .get_random_empty_corner_then_edge()
+            .ok_or_else(|| "Failed to get random tile".to_string()),
+        };
       }
-
-      CurrentPath::NotCenter(PlayerCenterPaths::PlayerPlacedEdgeNear) => {
-        not_center_corner_check_placed_edge_near(self, gameboard)
-      }
-
-      _ => Err("Unknown NotCenter Bot Path".to_string()),
+      _ => self.most_recent_chosen_coords = Err("Incorrect path input".to_string()),
     }
   }
 
-  pub fn not_center_edge_checks(&mut self, gameboard: &BoardConfig) -> Result<Coordinates, String> {
-    let edge_coords_around_bot_corner = self
-      .most_recent_chosen_coords
-      .as_ref()
-      .unwrap()
-      .get_edges_around_corner(gameboard)
-      .into_iter()
-      .filter(|edge| edge == &gameboard.last_modified_tile.unwrap())
-      .collect::<Vec<Coordinates>>();
+  /// This will only be called in the first 2 moves
+  pub fn check_if_center_is_available_or_not(&self, gameboard: &BoardConfig) -> CurrentPath {
+    let center_board_state = gameboard.get_board_state(&CENTER_TILE);
 
-    if !edge_coords_around_bot_corner.is_empty() {
-      self.path = CurrentPath::NotCenter(PlayerCenterPaths::PlayerPlacedEdgeNear);
-
-      Ok(edge_coords_around_bot_corner[0].get_opposite_coordinates(&CENTER_TILE))
+    if gameboard.tiles_covered == FIRST_MOVE && center_board_state == &BoardStates::Empty {
+      CurrentPath::Center(BotPaths::Unknown)
+    } else if center_board_state == &BoardStates::Empty {
+      CurrentPath::PlayerDidntPlaceCenter
     } else {
-      self.path = CurrentPath::FocusDraw;
-
-      self.auto_play(gameboard)
+      CurrentPath::FocusDraw
     }
   }
 
   pub fn center_corner_checks(&mut self, gameboard: &BoardConfig) -> Result<Coordinates, String> {
     match &self.path {
-      CurrentPath::Center(BotCenterPaths::Unknown) => {
-        self.path = CurrentPath::Center(BotCenterPaths::PlayerPlacedCorner);
+      CurrentPath::Center(BotPaths::Unknown) => {
+        self.path = CurrentPath::Center(BotPaths::PlayerPlacedCorner);
 
         let opposite_coords = gameboard
           .last_modified_tile
@@ -197,12 +92,12 @@ impl Bot {
           Err("Opposite corner is filled".to_string())
         }
       }
-      CurrentPath::Center(BotCenterPaths::PlayerPlacedCorner) => {
+      CurrentPath::Center(BotPaths::PlayerPlacedCorner) => {
         self.path = CurrentPath::FocusDraw;
 
         self.auto_play(gameboard)
       }
-      CurrentPath::Center(BotCenterPaths::PlayerPlacedEdge) => {
+      CurrentPath::Center(BotPaths::PlayerPlacedEdge) => {
         center_corner_check_placed_edge(self, gameboard)
       }
       _ => Err("Unknown Center Path".to_string()),
@@ -211,8 +106,8 @@ impl Bot {
 
   pub fn center_edge_checks(&mut self, gameboard: &BoardConfig) -> Result<Coordinates, String> {
     match &self.path {
-      CurrentPath::Center(BotCenterPaths::Unknown) => {
-        self.path = CurrentPath::Center(BotCenterPaths::PlayerPlacedEdge);
+      CurrentPath::Center(BotPaths::Unknown) => {
+        self.path = CurrentPath::Center(BotPaths::PlayerPlacedEdge);
 
         let corners_near_player_edge = gameboard
           .last_modified_tile
@@ -221,10 +116,10 @@ impl Bot {
 
         Ok(corners_near_player_edge[rand::thread_rng().gen_range(0..1)])
       }
-      CurrentPath::Center(BotCenterPaths::PlayerPlacedCorner) => {
+      CurrentPath::Center(BotPaths::PlayerPlacedCorner) => {
         center_edge_check_placed_corner_then_edge(self, gameboard)
       }
-      CurrentPath::Center(BotCenterPaths::PlayerPlacedEdge) => self.auto_play(gameboard),
+      CurrentPath::Center(BotPaths::PlayerPlacedEdge) => self.auto_play(gameboard),
       _ => Err("Unknown Center Path".to_string()),
     }
   }
@@ -309,48 +204,19 @@ fn center_edge_check_placed_corner_then_edge(
     .unwrap()
     .get_corners_around_edge(gameboard);
 
-  if coords_around_player_edge.iter().find_map(|coords| {
+  let possible_open_corner_near_player_edge = coords_around_player_edge.iter().find_map(|coords| {
     if gameboard.get_board_state(coords) != &BoardStates::Empty {
       Some(gameboard.get_board_state(coords))
     } else {
       None
     }
-  }) != Some(&bot.bot_symbol)
-  {
-    // this is when edge is far from the bot's corner
+  });
+
+  if possible_open_corner_near_player_edge != Some(&bot.bot_symbol) {
+    // this is when the edge the player placed is far from the bot's corner
     bot.auto_play(gameboard)
   } else {
     center_edge_check_placed_edge_near(bot, gameboard)
-  }
-}
-
-fn not_center_corner_check_placed_edge_near(
-  bot: &mut Bot,
-  gameboard: &BoardConfig,
-) -> Result<Coordinates, String> {
-  bot.path = CurrentPath::DoubleWinCondition;
-
-  if gameboard
-    .last_modified_tile
-    .unwrap()
-    .get_corners_around_edge(gameboard)
-    .iter()
-    .filter(|coords| {
-      gameboard.get_board_state(coords)
-        == gameboard.get_board_state(&gameboard.last_modified_tile.unwrap())
-    })
-    .count()
-    != 0
-  {
-    Ok(
-      gameboard
-        .last_modified_tile
-        .unwrap()
-        .get_opposite_coordinates(&CENTER_TILE),
-    )
-  } else {
-    bot.path = CurrentPath::FocusDraw;
-    bot.auto_play(gameboard)
   }
 }
 
@@ -361,18 +227,6 @@ fn center_position_checks(bot: &mut Bot, gameboard: &BoardConfig) {
     }
     BoardPositions::Edge => {
       bot.most_recent_chosen_coords = bot.center_edge_checks(gameboard);
-    }
-    _ => bot.most_recent_chosen_coords = Err("Unknown board position".to_string()),
-  }
-}
-
-fn not_center_position_checks(bot: &mut Bot, gameboard: &BoardConfig) {
-  match gameboard.get_board_position(&gameboard.last_modified_tile.unwrap()) {
-    BoardPositions::Corner => {
-      bot.most_recent_chosen_coords = bot.not_center_corner_checks(gameboard);
-    }
-    BoardPositions::Edge => {
-      bot.most_recent_chosen_coords = bot.not_center_edge_checks(gameboard);
     }
     _ => bot.most_recent_chosen_coords = Err("Unknown board position".to_string()),
   }
