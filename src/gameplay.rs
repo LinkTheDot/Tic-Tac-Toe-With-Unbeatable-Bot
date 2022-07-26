@@ -60,6 +60,8 @@ pub enum GameState {
 }
 
 pub fn run_gameplay(gameconfig: &mut GameConfig) -> Result<(), Box<dyn Error>> {
+  println!("\n\n -- run the program with 'bot_play' or 'free_play' for other modes -- \n\n");
+
   while gameconfig.gameboard.tiles_covered < 9 {
     println!();
 
@@ -205,7 +207,11 @@ fn player_turn(gameconfig: &mut GameConfig) {
 
     let selected_tile = match parse_player_input() {
       Ok(x) => x,
-      Err(_) => continue,
+      Err(error) => {
+        println!("{error}");
+
+        continue;
+      }
     };
 
     if gameconfig.gameboard.get_board_state(&selected_tile) == &BoardStates::Empty {
