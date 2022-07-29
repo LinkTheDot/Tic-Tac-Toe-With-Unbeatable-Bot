@@ -217,7 +217,7 @@ fn player_turn(gameconfig: &mut GameConfig) {
     if gameconfig.gameboard.get_board_state(&selected_tile) == &BoardStates::Empty {
       gameconfig
         .gameboard
-        .place_tile(&selected_tile, &gameconfig.player_symbol);
+        .place_tile(&selected_tile, gameconfig.player_symbol);
 
       gameconfig.gameboard.tiles_covered += 1;
 
@@ -233,7 +233,7 @@ fn bot_turn(bot: &mut Bot, gameboard: &mut BoardConfig) {
 
   gameboard.place_tile(
     bot.most_recent_chosen_coords.as_ref().unwrap(),
-    &bot.bot_symbol,
+    bot.bot_symbol,
   );
 
   println!(" -- bot turn over --\n");

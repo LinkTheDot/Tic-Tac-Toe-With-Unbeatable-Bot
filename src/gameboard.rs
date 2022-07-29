@@ -28,6 +28,12 @@ pub enum BoardStates {
   Empty,
 }
 
+impl AsRef<BoardStates> for BoardStates {
+  fn as_ref(&self) -> &Self {
+    self
+  }
+}
+
 #[derive(PartialEq, Clone, Debug)]
 pub enum BoardPositions {
   Corner,
@@ -106,9 +112,9 @@ impl BoardConfig {
     &self.tiles[coords.0][coords.1].board_state
   }
 
-  pub fn place_tile(&mut self, coords: &Coordinates, changed_state: &BoardStates) {
+  pub fn place_tile<B: AsRef<BoardStates>>(&mut self, coords: &Coordinates, changed_state: B) {
     self.last_modified_tile = Some(*coords);
-    self.tiles[coords.0][coords.1].board_state = *changed_state;
+    self.tiles[coords.0][coords.1].board_state = *changed_state.as_ref();
   }
 
   pub fn get_random_empty_corner(&self) -> Option<Coordinates> {

@@ -19,8 +19,8 @@ fn matching_adjacent_tiles_logic_works() {
   //X|-|-
   //X|-|-
   //-|-|-
-  boardconfig.place_tile(&(0, 0), &BoardStates::X);
-  boardconfig.place_tile(&(1, 0), &BoardStates::X);
+  boardconfig.place_tile(&(0, 0), BoardStates::X);
+  boardconfig.place_tile(&(1, 0), BoardStates::X);
 
   let adjacent_matched_tiles = boardconfig.matching_adjacent_tiles(&check_around_x_value);
   let adjacent_empty_tile = boardconfig.matching_adjacent_tiles(&check_around_empty_value);
@@ -41,10 +41,10 @@ mod two_in_series {
     // X|X|-
     // X|-|-
     // O|-|-
-    gameboard.place_tile(&(0, 0), &BoardStates::X);
-    gameboard.place_tile(&(0, 1), &BoardStates::X);
-    gameboard.place_tile(&(1, 0), &BoardStates::X);
-    gameboard.place_tile(&(2, 0), &BoardStates::O);
+    gameboard.place_tile(&(0, 0), BoardStates::X);
+    gameboard.place_tile(&(0, 1), BoardStates::X);
+    gameboard.place_tile(&(1, 0), BoardStates::X);
+    gameboard.place_tile(&(2, 0), BoardStates::O);
 
     let series = gameboard.check_if_two_in_series(&(0, 0));
 
@@ -59,9 +59,9 @@ mod two_in_series {
     // X|-|-
     // O|-|-
     // -|-|X
-    gameboard.place_tile(&(0, 0), &BoardStates::X);
-    gameboard.place_tile(&(2, 2), &BoardStates::X);
-    gameboard.place_tile(&(1, 0), &BoardStates::O);
+    gameboard.place_tile(&(0, 0), BoardStates::X);
+    gameboard.place_tile(&(2, 2), BoardStates::X);
+    gameboard.place_tile(&(1, 0), BoardStates::O);
 
     let series = gameboard.check_if_two_in_series(&(0, 0));
 
@@ -76,10 +76,10 @@ mod two_in_series {
     // X|-|-
     // X|-|X
     // O|-|-
-    gameboard.place_tile(&(0, 0), &BoardStates::X);
-    gameboard.place_tile(&(1, 0), &BoardStates::X);
-    gameboard.place_tile(&(1, 2), &BoardStates::X);
-    gameboard.place_tile(&(2, 0), &BoardStates::O);
+    gameboard.place_tile(&(0, 0), BoardStates::X);
+    gameboard.place_tile(&(1, 0), BoardStates::X);
+    gameboard.place_tile(&(1, 2), BoardStates::X);
+    gameboard.place_tile(&(2, 0), BoardStates::O);
 
     let series = gameboard.check_if_two_in_series(&(1, 0));
 
@@ -94,10 +94,10 @@ mod two_in_series {
     // X|-|-
     // X|O|X
     // -|-|-
-    gameboard.place_tile(&(0, 0), &BoardStates::X);
-    gameboard.place_tile(&(1, 0), &BoardStates::X);
-    gameboard.place_tile(&(1, 2), &BoardStates::X);
-    gameboard.place_tile(&(1, 1), &BoardStates::O);
+    gameboard.place_tile(&(0, 0), BoardStates::X);
+    gameboard.place_tile(&(1, 0), BoardStates::X);
+    gameboard.place_tile(&(1, 2), BoardStates::X);
+    gameboard.place_tile(&(1, 1), BoardStates::O);
 
     let series = gameboard.check_if_two_in_series(&(1, 0));
 

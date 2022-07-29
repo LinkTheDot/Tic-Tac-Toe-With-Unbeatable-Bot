@@ -27,9 +27,9 @@ mod check_if_win_logic {
     //X|X|X
     //-|-|-
     //-|-|-
-    gameconfig.gameboard.place_tile(&(0, 0), &BoardStates::X);
-    gameconfig.gameboard.place_tile(&(0, 1), &BoardStates::X);
-    gameconfig.gameboard.place_tile(&(0, 2), &BoardStates::X);
+    gameconfig.gameboard.place_tile(&(0, 0), BoardStates::X);
+    gameconfig.gameboard.place_tile(&(0, 1), BoardStates::X);
+    gameconfig.gameboard.place_tile(&(0, 2), BoardStates::X);
 
     assert_eq!(gameconfig.check_if_win(), expected_outcome);
   }
@@ -46,9 +46,9 @@ mod check_if_win_logic {
     //X|-|-
     //X|-|-
     //X|-|-
-    gameconfig.gameboard.place_tile(&(0, 0), &BoardStates::X);
-    gameconfig.gameboard.place_tile(&(1, 0), &BoardStates::X);
-    gameconfig.gameboard.place_tile(&(2, 0), &BoardStates::X);
+    gameconfig.gameboard.place_tile(&(0, 0), BoardStates::X);
+    gameconfig.gameboard.place_tile(&(1, 0), BoardStates::X);
+    gameconfig.gameboard.place_tile(&(2, 0), BoardStates::X);
 
     assert_eq!(gameconfig.check_if_win(), expected_outcome);
   }
@@ -65,8 +65,8 @@ mod check_if_win_logic {
     //X|-|-
     //X|-|-
     //-|-|-
-    gameconfig.gameboard.place_tile(&(0, 0), &BoardStates::X);
-    gameconfig.gameboard.place_tile(&(1, 0), &BoardStates::X);
+    gameconfig.gameboard.place_tile(&(0, 0), BoardStates::X);
+    gameconfig.gameboard.place_tile(&(1, 0), BoardStates::X);
 
     assert_eq!(gameconfig.check_if_win(), expected_outcome);
   }

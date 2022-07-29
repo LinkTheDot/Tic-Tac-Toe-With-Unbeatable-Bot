@@ -2,6 +2,7 @@ use crate::gameboard::*;
 
 pub const GRID_SIZE: usize = 3;
 pub const ISIZE_GRID_SIZE: isize = 3;
+const ISIZE_MIDDLE_COORDS: (isize, isize) = (1, 1);
 
 pub type Coordinates = (usize, usize);
 
@@ -13,6 +14,7 @@ pub trait CoordinateMethods {
 
   fn is_matching_in_a_row(&self, adjacent_coords: &Coordinates, board_config: &BoardConfig)
     -> bool;
+
   fn is_in_between_matching(
     &self,
     adjacent_coords: &Coordinates,
@@ -196,7 +198,7 @@ fn get_corners_around_edge_and_edges_around_corner(coordinates: &Coordinates) ->
       && coords.0 != ISIZE_GRID_SIZE
       && coords.1 != -1
       && coords.1 != ISIZE_GRID_SIZE
-      && coords != &(1, 1)
+      && coords != &ISIZE_MIDDLE_COORDS
   })
   .map(|coords| (coords.0.try_into().unwrap(), coords.1.try_into().unwrap()))
   .collect::<Vec<Coordinates>>()

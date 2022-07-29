@@ -26,9 +26,9 @@ mod center_checks {
       bot.most_recent_chosen_coords = Ok((1, 1));
       gameboard.place_tile(
         bot.most_recent_chosen_coords.as_ref().unwrap(),
-        &BOT_BOARD_SYMBOL,
+        BOT_BOARD_SYMBOL,
       );
-      gameboard.place_tile(&(2, 1), &PLAYER_BOARD_SYMBOL);
+      gameboard.place_tile(&(2, 1), PLAYER_BOARD_SYMBOL);
 
       bot.path = CurrentPath::Center(BotPaths::Unknown);
 
@@ -51,9 +51,9 @@ mod center_checks {
       bot.most_recent_chosen_coords = Ok((1, 1));
       gameboard.place_tile(
         bot.most_recent_chosen_coords.as_ref().unwrap(),
-        &BOT_BOARD_SYMBOL,
+        BOT_BOARD_SYMBOL,
       );
-      gameboard.place_tile(&(2, 1), &PLAYER_BOARD_SYMBOL);
+      gameboard.place_tile(&(2, 1), PLAYER_BOARD_SYMBOL);
 
       bot.most_recent_chosen_coords = bot.center_edge_checks(&gameboard);
 
@@ -62,9 +62,9 @@ mod center_checks {
       //-|O|X
       gameboard.place_tile(
         bot.most_recent_chosen_coords.as_ref().unwrap(),
-        &BOT_BOARD_SYMBOL,
+        BOT_BOARD_SYMBOL,
       );
-      gameboard.place_tile(&(1, 2), &PLAYER_BOARD_SYMBOL);
+      gameboard.place_tile(&(1, 2), PLAYER_BOARD_SYMBOL);
 
       bot.most_recent_chosen_coords = bot.center_edge_checks(&gameboard);
 
@@ -87,8 +87,8 @@ mod center_checks {
       //-|-|-
       //-|X|-
       //-|-|O
-      gameboard.place_tile(&(1, 1), &BOT_BOARD_SYMBOL);
-      gameboard.place_tile(&(2, 2), &PLAYER_BOARD_SYMBOL);
+      gameboard.place_tile(&(1, 1), BOT_BOARD_SYMBOL);
+      gameboard.place_tile(&(2, 2), PLAYER_BOARD_SYMBOL);
 
       bot.most_recent_chosen_coords = bot.center_corner_checks(&gameboard);
 
@@ -109,17 +109,17 @@ mod center_checks {
       bot.most_recent_chosen_coords = Ok((1, 1));
       gameboard.place_tile(
         bot.most_recent_chosen_coords.as_ref().unwrap(),
-        &BOT_BOARD_SYMBOL,
+        BOT_BOARD_SYMBOL,
       );
-      gameboard.place_tile(&(2, 2), &PLAYER_BOARD_SYMBOL);
+      gameboard.place_tile(&(2, 2), PLAYER_BOARD_SYMBOL);
 
       bot.most_recent_chosen_coords = bot.center_corner_checks(&gameboard);
 
       gameboard.place_tile(
         bot.most_recent_chosen_coords.as_ref().unwrap(),
-        &BOT_BOARD_SYMBOL,
+        BOT_BOARD_SYMBOL,
       );
-      gameboard.place_tile(&(2, 0), &PLAYER_BOARD_SYMBOL);
+      gameboard.place_tile(&(2, 0), PLAYER_BOARD_SYMBOL);
 
       bot.most_recent_chosen_coords = bot.center_corner_checks(&gameboard);
 
@@ -141,14 +141,16 @@ mod auto_play_logic {
     //X|-|-
     //X|O|-
     //-|-|-
-    gameboard.place_tile(&(1, 0), &BOT_BOARD_SYMBOL);
+    gameboard.place_tile(&(1, 0), BOT_BOARD_SYMBOL);
+
     bot.most_recent_chosen_coords = Ok((0, 0));
+
     gameboard.place_tile(
       bot.most_recent_chosen_coords.as_ref().unwrap(),
-      &BOT_BOARD_SYMBOL,
+      BOT_BOARD_SYMBOL,
     );
 
-    gameboard.place_tile(&(1, 1), &PLAYER_BOARD_SYMBOL);
+    gameboard.place_tile(&(1, 1), PLAYER_BOARD_SYMBOL);
 
     bot.most_recent_chosen_coords = bot.auto_play(&gameboard);
 
@@ -164,14 +166,14 @@ mod auto_play_logic {
     //O|-|-
     //O|X|-
     //-|-|-
-    gameboard.place_tile(&(1, 0), &PLAYER_BOARD_SYMBOL);
+    gameboard.place_tile(&(1, 0), PLAYER_BOARD_SYMBOL);
     bot.most_recent_chosen_coords = Ok((1, 1));
     gameboard.place_tile(
       bot.most_recent_chosen_coords.as_ref().unwrap(),
-      &BOT_BOARD_SYMBOL,
+      BOT_BOARD_SYMBOL,
     );
 
-    gameboard.place_tile(&(0, 0), &PLAYER_BOARD_SYMBOL);
+    gameboard.place_tile(&(0, 0), PLAYER_BOARD_SYMBOL);
 
     bot.most_recent_chosen_coords = bot.auto_play(&gameboard);
 
@@ -187,14 +189,14 @@ mod auto_play_logic {
     //X|-|-
     //-|O|X
     //-|-|-
-    gameboard.place_tile(&(2, 1), &BOT_BOARD_SYMBOL);
+    gameboard.place_tile(&(2, 1), BOT_BOARD_SYMBOL);
     bot.most_recent_chosen_coords = Ok((0, 0));
     gameboard.place_tile(
       bot.most_recent_chosen_coords.as_ref().unwrap(),
-      &BOT_BOARD_SYMBOL,
+      BOT_BOARD_SYMBOL,
     );
 
-    gameboard.place_tile(&(1, 1), &PLAYER_BOARD_SYMBOL);
+    gameboard.place_tile(&(1, 1), PLAYER_BOARD_SYMBOL);
 
     bot.most_recent_chosen_coords = bot.auto_play(&gameboard);
 
@@ -213,15 +215,15 @@ mod auto_play_logic {
     //O|X|-
     //X|-|-
     //-|X|-
-    gameboard.place_tile(&(0, 1), &BOT_BOARD_SYMBOL);
-    gameboard.place_tile(&(2, 1), &BOT_BOARD_SYMBOL);
+    gameboard.place_tile(&(0, 1), BOT_BOARD_SYMBOL);
+    gameboard.place_tile(&(2, 1), BOT_BOARD_SYMBOL);
     bot.most_recent_chosen_coords = Ok((1, 0));
     gameboard.place_tile(
       bot.most_recent_chosen_coords.as_ref().unwrap(),
-      &BOT_BOARD_SYMBOL,
+      BOT_BOARD_SYMBOL,
     );
 
-    gameboard.place_tile(&(0, 0), &PLAYER_BOARD_SYMBOL);
+    gameboard.place_tile(&(0, 0), PLAYER_BOARD_SYMBOL);
 
     bot.most_recent_chosen_coords = bot.auto_play(&gameboard);
 
@@ -243,7 +245,7 @@ mod auto_play_logic {
       }
     }
 
-    gameboard.place_tile(&(2, 2), &PLAYER_BOARD_SYMBOL);
+    gameboard.place_tile(&(2, 2), PLAYER_BOARD_SYMBOL);
 
     bot.most_recent_chosen_coords = Ok((0, 0));
 
@@ -280,7 +282,7 @@ mod choose_coordinates_logic {
       let player_placement = (1, 1);
       let expected_board_position = BoardPositions::Corner;
 
-      gameboard.place_tile(&player_placement, &PLAYER_BOARD_SYMBOL);
+      gameboard.place_tile(&player_placement, PLAYER_BOARD_SYMBOL);
 
       bot.choose_coordinates(&gameboard);
 
@@ -297,7 +299,7 @@ mod choose_coordinates_logic {
       let player_placement = (0, 0);
       let expected_chosen_placement = Ok((1, 1));
 
-      gameboard.place_tile(&player_placement, &PLAYER_BOARD_SYMBOL);
+      gameboard.place_tile(&player_placement, PLAYER_BOARD_SYMBOL);
 
       bot.choose_coordinates(&gameboard);
 
@@ -337,7 +339,7 @@ mod known_bugs {
       // -|-|-
       gameconfig
         .gameboard
-        .place_tile(&first_move, &PLAYER_BOARD_SYMBOL);
+        .place_tile(&first_move, PLAYER_BOARD_SYMBOL);
 
       // Some corner, it's random
       // -|-|-
@@ -346,7 +348,7 @@ mod known_bugs {
       gameconfig.bot.choose_coordinates(&gameconfig.gameboard);
       gameconfig.gameboard.place_tile(
         &gameconfig.bot.most_recent_chosen_coords.as_ref().unwrap(),
-        &BOT_BOARD_SYMBOL,
+        BOT_BOARD_SYMBOL,
       );
 
       // Opposite of the bot's corner
@@ -361,7 +363,7 @@ mod known_bugs {
 
       gameconfig
         .gameboard
-        .place_tile(&second_move, &PLAYER_BOARD_SYMBOL);
+        .place_tile(&second_move, PLAYER_BOARD_SYMBOL);
 
       gameconfig.bot.choose_coordinates(&gameconfig.gameboard);
 
