@@ -59,14 +59,14 @@ pub enum GameState {
   Draw,
 }
 
-pub fn run_gameplay(gameconfig: &mut GameConfig) -> Result<(), Box<dyn Error>> {
+pub fn player_vs_bot(mut gameconfig: GameConfig) -> Result<(), Box<dyn Error>> {
   println!("\n\n -- run the program with 'bot_play' or 'free_play' for other modes -- \n\n");
 
   while gameconfig.gameboard.tiles_covered < 9 {
     println!();
 
     if gameconfig.player_turn {
-      player_turn(gameconfig);
+      player_turn(&mut gameconfig);
 
       gameconfig.player_turn = false;
     } else {
@@ -130,7 +130,7 @@ fn index_parsing(player_input: String) -> Result<Coordinates, Box<dyn Error>> {
   Err(Box::from("incorrect input"))
 }
 
-pub fn free_play(gameconfig: &mut GameConfig) -> Result<(), Box<dyn Error>> {
+pub fn free_play(mut gameconfig: GameConfig) -> Result<(), Box<dyn Error>> {
   let player_one_symbol = gameconfig.player_symbol;
   let player_two_symbol = gameconfig.bot.bot_symbol;
 
@@ -143,10 +143,10 @@ pub fn free_play(gameconfig: &mut GameConfig) -> Result<(), Box<dyn Error>> {
       gameconfig.player_symbol = player_two_symbol;
     }
 
-    player_turn(gameconfig);
+    player_turn(&mut gameconfig);
 
     if gameconfig.check_if_win() {
-      gameconfig.gameboard.print_board();
+      gameconfig.end_gamestate = gameconfig.gameboard.last_placed_tile_to_game_state();
 
       break;
     }
@@ -164,7 +164,7 @@ pub fn free_play(gameconfig: &mut GameConfig) -> Result<(), Box<dyn Error>> {
   Ok(())
 }
 
-pub fn bot_play(gameconfig: &mut GameConfig) -> Result<(), Box<dyn Error>> {
+pub fn bot_play(mut gameconfig: GameConfig) -> Result<(), Box<dyn Error>> {
   use std::thread;
   use std::time::Duration;
 
@@ -241,13 +241,17 @@ fn bot_turn(bot: &mut Bot, gameboard: &mut BoardConfig) {
   gameboard.tiles_covered += 1;
 }
 
-pub fn check_args_for_gamemodes(
-  user_input: String,
-  gameconfig: &mut GameConfig,
+pub fn run_gamemode(
+  user_arguments: Option<String>,
+  gameconfig: GameConfig,
 ) -> Result<(), Box<dyn Error>> {
-  match user_input.to_lowercase().trim() {
-    "bot_play" => bot_play(gameconfig),
-    "free_play" => free_play(gameconfig),
-    _ => Ok(()),
+  if let Some(gamemode) = user_arguments {
+    match gamemode.to_lowercase().trim() {
+      "bot_play" => bot_play(gameconfig),
+      "free_play" => free_play(gameconfig),
+      _ => Ok(()),
+    }
+  } else {
+    player_vs_bot(gameconfig)
   }
 }
