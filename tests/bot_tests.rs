@@ -6,7 +6,6 @@ const PLAYER_BOARD_SYMBOL: BoardStates = BoardStates::O;
 
 #[cfg(test)]
 mod center_checks {
-  #![allow(unused)]
   use super::*;
 
   #[cfg(test)]
@@ -257,7 +256,6 @@ mod auto_play_logic {
 
 #[cfg(test)]
 mod choose_coordinates_logic {
-  #![allow(unused)]
   use super::*;
 
   #[cfg(test)]
@@ -267,7 +265,7 @@ mod choose_coordinates_logic {
     #[test]
     fn bot_is_first() {
       let mut bot = Bot::new();
-      let mut gameboard = BoardConfig::new();
+      let gameboard = BoardConfig::new();
       let expected_chosen_placement = Ok((1, 1));
 
       bot.choose_coordinates(&gameboard);
@@ -347,7 +345,7 @@ mod known_bugs {
       // X|-|-
       gameconfig.bot.choose_coordinates(&gameconfig.gameboard);
       gameconfig.gameboard.place_tile(
-        &gameconfig.bot.most_recent_chosen_coords.as_ref().unwrap(),
+        gameconfig.bot.most_recent_chosen_coords.as_ref().unwrap(),
         BOT_BOARD_SYMBOL,
       );
 

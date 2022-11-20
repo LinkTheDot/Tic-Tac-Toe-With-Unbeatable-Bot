@@ -55,14 +55,12 @@ mod is_across_and_diagonal_logic {
     let origin = (0, 0);
     let horizontal_input = (0, 1);
     let diagonal_input = (1, 1);
-    let expected_horizontal_result = true;
-    let expected_diagonal_result = false;
 
     let not_horizontal_from = diagonal_input.is_across_from(&origin);
     let horizontal_from = horizontal_input.is_across_from(&origin);
 
-    assert_eq!(horizontal_from, expected_horizontal_result);
-    assert_eq!(not_horizontal_from, expected_diagonal_result);
+    assert!(horizontal_from);
+    assert!(!not_horizontal_from);
   }
 
   #[test]
@@ -74,8 +72,8 @@ mod is_across_and_diagonal_logic {
     let diagonal_from = diagonal.is_diagonal_from(&origin);
     let not_diagonal_from = bad_input.is_diagonal_from(&origin);
 
-    assert_eq!(diagonal_from, true);
-    assert_eq!(not_diagonal_from, false);
+    assert!(diagonal_from);
+    assert!(!not_diagonal_from);
   }
 }
 
@@ -97,10 +95,13 @@ mod get_coords_around_logic {
   fn from_edge() {
     let edge_coords = (1, 0);
 
-    let expected_coords_around = vec![(0, 0), (0, 1), (1, 1), (2, 0), (2, 1)].sort();
-    let around_edge = edge_coords.get_coords_around().sort();
+    let mut expected_coords_around = vec![(0, 0), (0, 1), (1, 1), (2, 0), (2, 1)];
+    expected_coords_around.sort_unstable();
 
-    assert_eq!(around_edge, expected_coords_around);
+    let mut coords_around = edge_coords.get_coords_around();
+    coords_around.sort_unstable();
+
+    assert_eq!(expected_coords_around, coords_around);
   }
 }
 
